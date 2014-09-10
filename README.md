@@ -1,5 +1,5 @@
 # Description
-Localize Django applications without compiling .po files.
+Localize Django applications without compiling .po files.  
 Also optionally live-reload localizations if any .po file is modified.
 
 # Requirements
@@ -16,10 +16,10 @@ python setup.py install
 - Add `'po_localization'` to your `INSTALLED_APPS`
 
 # Settings
-- `AUTORELOAD_TRANSLATIONS`
-    Whether translations should be checked for modifications and reloaded before each request.
+- `AUTORELOAD_TRANSLATIONS` :
+  - Whether translations should be checked for modifications and reloaded before each request.  
     By default it has the same value as your `DEBUG` setting.
 
 # Issues
 If you have any suggestions, bug reports or annoyances please report them
-to the issue tracker at https://github.com/kmichel/po_localization/issues .
+to the issue tracker at https://github.com/kmichel/po-localization/issues .
