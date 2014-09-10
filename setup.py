@@ -10,7 +10,7 @@ setup(
     author='Kevin Michel',
     author_email='kmichel.info@gmail.com',
     url='https://github.com/kmichel/po-localization',
-    download_url='https://github.com/kmichel/po-localization/tarball/0.1',
+    download_url='https://github.com/kmichel/po-localization/archive/v0.1.tar.gz',
     keywords=['django', 'localization'],
     classifiers=[
         'Development Status :: 3 - Alpha',
