@@ -4,13 +4,14 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import re
-from django.utils.six import text_type
+from .unescape import unescape, UnescapeError
 
 MATCHER = re.compile(r'^\s*(#.*)?\s*(?:([^"\[\s]+)(?:\[(\d+)\])?)?(?:\s*"(.*)")?\s*$')
 
 
 def parse_po_filename(filename):
-    with open(filename) as po_file:
+    # XXX: Actually, encoding may be different and specified in the .po file comment
+    with open(filename, encoding='utf-8') as po_file:
         return parse_po_file(po_file, filename)
 
 
@@ -24,19 +25,18 @@ def parse_po_file(po_file, filename=None):
     current_plural_index = 0
     plural_translated_messages = {}
 
-    def decode_string(encoded_string):
-        # XXX: Actually, encoding may be different and specified in the .po file comment
-        return text_type(encoded_string.decode('string_escape'), encoding='utf-8')
-
     def store_pending_data():
         if len(message):
-            if state == 'after msgstr':
-                catalog[decode_string(message)] = decode_string(translated_message)
-            elif state == 'after msgstr[N]':
-                for number, text in plural_translated_messages.items():
-                    catalog_key = (decode_string(message), number)
-                    catalog[catalog_key] = decode_string(text)
-                plural_translated_messages.clear()
+            try:
+                if state == 'after msgstr':
+                    catalog[unescape(message)] = unescape(translated_message)
+                elif state == 'after msgstr[N]':
+                    for number, text in plural_translated_messages.items():
+                        catalog_key = (unescape(message), number)
+                        catalog[catalog_key] = unescape(text)
+                    plural_translated_messages.clear()
+            except UnescapeError as e:
+                raise ParseError(filename, line_number, e.message)
 
     for line_number, line in enumerate(po_file):
         match = MATCHER.match(line)
