@@ -38,13 +38,20 @@ msgstr "Message translated"
             "Message to translate": "Message translated"
         })
 
-    def test_decoding(self):
+    def test_unescaping(self):
         self._parse_and_expect(r"""
 msgid "Line One\nLine Two"
 msgstr "First Line\nSecond Line"
 """, {
             "Line One\nLine Two": "First Line\nSecond Line"
         })
+
+    def test_broken_unescaping(self):
+        self._parse_and_expect_failure(r"""
+msgid "Line One\"
+"nLine Two"
+msgstr "First Line\nSecond Line"
+""")
 
     def test_header_not_in_catalog(self):
         self._parse_and_expect(r"""
