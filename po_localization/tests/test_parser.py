@@ -86,8 +86,7 @@ msgstr[1] "Translated messages"
         })
 
     def test_context_and_plural(self):
-        self._parse_and_expect(
-            """
+        self._parse_and_expect("""
 msgctxt "Context"
 msgid "Message to translate"
 msgid_plural "Messages to translate"
@@ -146,8 +145,7 @@ msgstr "Translated message"
 """)
 
     def test_duplicate_plural_index(self):
-        self._parse_and_expect_failure(
-            """
+        self._parse_and_expect_failure("""
 msgctxt "Context"
 msgid "Message to translate"
 msgid_plural "Messages to translate"
