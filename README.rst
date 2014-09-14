@@ -15,8 +15,7 @@ Installation
 ============
 .. code-block:: bash
 
-    $ git clone https://github.com/kmichel/po-localization
-    $ python setup.py install
+    $ pip install po-localization
 
 =====
 Setup
