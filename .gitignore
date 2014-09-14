@@ -3,7 +3,9 @@ __pycache__/
 *.pyc
 
 # distutils
+MANIFEST
 build/
+dist/
 
 # PyCharm
 .idea/
