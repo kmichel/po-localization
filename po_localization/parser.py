@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import io
 import re
 from .unescape import unescape, UnescapeError
 
@@ -11,7 +12,7 @@ MATCHER = re.compile(r'^\s*(#.*)?\s*(?:([^"\[\s]+)(?:\[(\d+)\])?)?(?:\s*"(.*)")?
 
 def parse_po_filename(filename):
     # XXX: Actually, encoding may be different and specified in the .po file comment
-    with open(filename, encoding='utf-8') as po_file:
+    with io.open(filename, encoding='utf-8') as po_file:
         return parse_po_file(po_file, filename)
 
 

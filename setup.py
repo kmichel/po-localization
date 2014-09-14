@@ -12,6 +12,7 @@ with open('README.rst') as readme_file:
 setup(
     name='po_localization',
     packages=['po_localization', 'po_localization.tests'],
+    package_data={'po_localization.tests': ['*.po']},
     version=__version__,
     description='Localize Django applications without compiling .po files',
     long_description=long_description,
