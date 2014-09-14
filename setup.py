@@ -8,7 +8,7 @@ with open('po_localization/version.py') as version_file:
 
 setup(
     name='po_localization',
-    packages=['po_localization'],
+    packages=['po_localization', 'po_localization.tests'],
     version=__version__,
     description='Localize Django applications without compiling .po files',
     author='Kevin Michel',
