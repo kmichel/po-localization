@@ -3,8 +3,8 @@ Localize Django applications without compiling .po files.
 Also optionally live-reload localizations if any .po file is modified.
 
 # Requirements
-- python >= 2.7, >= 3.3
-- django
+- python 2.7 or >= 3.2
+- django >= 1.6
 
 # Installation
 ```shell
