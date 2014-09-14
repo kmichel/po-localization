@@ -6,11 +6,15 @@ __version__ = 'unknown'
 with open('po_localization/version.py') as version_file:
     exec(version_file.read())
 
+with open('README.rst') as readme_file:
+    long_description = readme_file.read()
+
 setup(
     name='po_localization',
     packages=['po_localization', 'po_localization.tests'],
     version=__version__,
     description='Localize Django applications without compiling .po files',
+    long_description=long_description,
     author='Kevin Michel',
     author_email='kmichel.info@gmail.com',
     url='https://github.com/kmichel/po-localization',
