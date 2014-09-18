@@ -11,7 +11,12 @@ with open('README.rst') as readme_file:
 
 setup(
     name='po_localization',
-    packages=['po_localization', 'po_localization.tests'],
+    packages=[
+        'po_localization',
+        'po_localization.management',
+        'po_localization.management.commands',
+        'po_localization.tests',
+        'po_localization.tests.test_app'],
     package_data={'po_localization.tests': ['*.po']},
     version=__version__,
     description='Localize Django applications without compiling .po files',

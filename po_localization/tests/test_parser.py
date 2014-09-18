@@ -1,12 +1,13 @@
 # coding=utf-8
 
 from __future__ import absolute_import
+from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
 from io import StringIO
 from unittest import TestCase
-from ..parser import ParseError, parse_po_file, parse_po_filename
+from po_localization.parser import ParseError, parse_po_file, parse_po_filename
 
 
 class ParserTestCase(TestCase):

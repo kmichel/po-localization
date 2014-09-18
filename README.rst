@@ -1,8 +1,9 @@
 ===========
 Description
 ===========
-| Localize Django applications without compiling .po files.
-| Also optionally live-reload localizations if any .po file is modified.
+* Localize Django applications without installing gettext, pybabel or compiling .po files.
+* Automatically reload translations when any .po file is modified.
+* Extract messages from python files automatically or using a management command.
 
 ============
 Requirements
@@ -25,9 +26,24 @@ Add ``'po_localization'`` to your ``INSTALLED_APPS``.
 ========
 Settings
 ========
-``AUTORELOAD_TRANSLATIONS`` :
-    | Whether translations should be checked for modifications and reloaded before each request.
-    | By default it has the same value as your ``DEBUG`` setting.
+``AUTO_RELOAD_TRANSLATIONS = settings.DEBUG``
+    | Whether translation files should be checked for modifications and reloaded before each request.
+``AUTO_UPDATE_TRANSLATIONS = False``
+    | Whether translation files should be automatically created or updated from python files when the server reloads.
+``UPDATE_TRANSLATIONS_APPS = ()``
+    | List of apps to update, using the same format as ``INSTALLED_APPS``.
+``UPDATE_TRANSLATIONS_WITH_LOCATIONS = True``
+    | Whether translation files should include the locations of the extracted messages.
+``UPDATE_TRANSLATIONS_PRUNE_OBSOLETES = False``
+    | Whether obsolete translations should be pruned from translation files.
+    | Empty translations will always be pruned.
+    | Even if not pruned, obsolete translations will be marked as such with a comment.
+
+===================
+Management Commands
+===================
+``update_translations``
+    Extract messages from python files and create or update translation files.
 
 ======
 Issues

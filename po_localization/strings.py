@@ -1,14 +1,45 @@
 # coding=utf-8
 
 from __future__ import absolute_import
+from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
 import sys
 
+# PyCharm incorrectly flags \v as an invalid escape sequence in python regexp, hence the \x0b
+ESCAPER = re.compile(r'[\a\b\f\n\r\t\x0b\\"]')
 UNESCAPER = re.compile(r'\\(?:([abfnrtv\\"])|([0-7]+)|x([0-9a-fA-F]+)|(.))?')
 
 unicode_chr = unichr if sys.version_info[0] == 2 else chr
+
+
+def escape(string):
+    return ESCAPER.sub(_escape_char, string)
+
+
+def _escape_char(match):
+    char = match.group(0)
+    if char == '\a':
+        return r'\a'
+    elif char == '\b':
+        return r'\b'
+    elif char == '\f':
+        return r'\f'
+    elif char == '\n':
+        return r'\n'
+    elif char == '\r':
+        return r'\r'
+    elif char == '\t':
+        return r'\t'
+    elif char == '\v':
+        return r'\v'
+    elif char == '\\':
+        return r'\\'
+    elif char == '"':
+        return r'\"'
+    else:
+        return char
 
 
 def unescape(escaped_string):

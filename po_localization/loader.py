@@ -1,14 +1,13 @@
 # coding=utf-8
 
 from __future__ import absolute_import
+from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
 import os
 import sys
 import threading
-from django.utils._os import upath
-from django.utils.importlib import import_module
 import django.utils.translation.trans_real
 from . import parser
 
@@ -23,7 +22,7 @@ class TranslationLoader(object):
         self.is_dirty = True
         self.lock = threading.Lock()
 
-    def update(self, force=False):
+    def reload(self, force=False):
         with self.lock:
             if force:
                 self.is_dirty = True
@@ -58,28 +57,6 @@ class TranslationLoader(object):
             translation_path = os.path.join(locale_path, locale, 'LC_MESSAGES/django.po')
             if include_missing or os.path.isfile(translation_path):
                 yield translation_path
-
-
-def get_enabled_locales(settings):
-    ret = []
-    for language_code, language_name in settings.LANGUAGES:
-        ret.append(django.utils.translation.trans_real.to_locale(language_code))
-    return ret
-
-
-def get_localization_paths(settings):
-    ret = []
-    django_locale_path = os.path.join(os.path.dirname(upath(sys.modules[settings.__module__].__file__)), 'locale')
-    ret.append(django_locale_path)
-    for app_name in reversed(settings.INSTALLED_APPS):
-        app = import_module(app_name)
-        app_locale_path = os.path.join(os.path.dirname(upath(app.__file__)), 'locale')
-        if os.path.isdir(app_locale_path):
-            ret.append(app_locale_path)
-    for locale_path in reversed(settings.LOCALE_PATHS):
-        if os.path.isdir(locale_path):
-            ret.append(locale_path)
-    return ret
 
 
 def get_file_mtime(filename):

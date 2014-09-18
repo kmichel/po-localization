@@ -1,10 +1,22 @@
 # coding=utf-8
 
 from __future__ import absolute_import
+from __future__ import print_function
 from __future__ import unicode_literals
 
 from unittest import TestCase
-from ..unescape import unescape, UnescapeError
+from po_localization.strings import escape, unescape, UnescapeError
+
+
+class EscapeTextCase(TestCase):
+    def test_empty(self):
+        self.assertEqual("", escape(""))
+
+    def test_simple(self):
+        self.assertEqual(r"First\nSecond", escape("First\nSecond"))
+
+    def test_multiple(self):
+        self.assertEqual(r"\a \b \f \n \r \t \v \\ \"", escape("\a \b \f \n \r \t \v \\ \""))
 
 
 class UnescapeTestCase(TestCase):
