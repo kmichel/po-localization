@@ -9,13 +9,17 @@
 <body>
 {% trans "simple translation" %}
 
-{% trans "translation to variable" as  translated_variable %}
+{% trans "translation to variable" as translated_variable %}
 
 {% trans "translation with context" context "context" %}
 
 {% trans ignored_variable_translation %}
 
 {% trans "ignored translation with variable context" context variable_context %}
+
+{% trans "ignored translation with filter"|filter %}
+
+{% trans "ignored translation with filtered context" context "context"|filter %}
 
 {% blocktrans %}simple block translation{% endblocktrans %}
 
@@ -25,7 +29,7 @@
 
 {% blocktrans count counter=counter_var %}{{counter}} block translation{% plural %}{{counter} block translations{% endblocktrans %}
 
-{% blocktrans count counter=counter_var context "context"%}{{counter}} block translation with context{% plural %}{{counter} block translations with context{% endblocktrans %}
+{% blocktrans count counter=counter_var context "context" %}{{counter}} block translation with context{% plural %}{{counter} block translations with context{% endblocktrans %}
 
 {% blocktrans count counter=counter_var context variable_context %}ignored {{counter}} block translation with variable context{% plural %}ignored {{counter} block translations with variable context{% endblocktrans %}
 

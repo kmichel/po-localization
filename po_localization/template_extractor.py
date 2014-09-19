@@ -17,12 +17,7 @@ def extract_messages(filename, po_file, printable_filename=None):
         file_content = sample_file.read()
     lexer = template.Lexer(file_content, printable_filename)
     tokens = lexer.tokenize()
-    parser = template.Parser(tokens)
-    minimal_tags = collections.defaultdict(lambda: dummy_tag)
-    minimal_tags['load'] = load_i18n_tag
-    minimal_tags['comment'] = parser.tags['comment']
-    parser.tags = minimal_tags
-    parser.filters.clear()
+    parser = MessageParser(tokens)
     nodes = parser.parse()
     for node in nodes:
         if isinstance(node, LinenoNode):
@@ -44,6 +39,27 @@ def extract_messages(filename, po_file, printable_filename=None):
                         po_file.add_entry(message, context=context).add_location(lexer.origin, node.lineno)
 
 
+class MessageParser(template.Parser):
+    def __init__(self, tokens):
+        super(MessageParser, self).__init__(tokens)
+        minimal_tags = collections.defaultdict(lambda: dummy_tag)
+        minimal_tags['load'] = load_i18n_tag
+        minimal_tags['comment'] = self.tags['comment']
+        self.tags = minimal_tags
+        self.filters = collections.defaultdict(lambda: dummy_filter)
+
+    def find_filter(self, filter_name):
+        return dummy_filter
+
+    def compile_filter(self, token):
+        return MessageFilterExpression(token, self)
+
+
+class MessageFilterExpression(template.FilterExpression):
+    @staticmethod
+    def args_check(name, func, provided):
+        return True
+
 def load_i18n_tag(parser, token):
     if token.contents.split()[1] == 'i18n':
         original_library = template.import_library('django.templatetags.i18n')
@@ -52,6 +68,10 @@ def load_i18n_tag(parser, token):
         library.tags['blocktrans'] = lineno_tag(original_library.tags['blocktrans'])
         parser.add_library(library)
     return template.Node()
+
+
+def dummy_filter(value):
+    return value
 
 
 def dummy_tag(parser, token):
