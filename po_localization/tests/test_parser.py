@@ -285,7 +285,7 @@ msgstr[1] "Translated messages"
 """)
 
     def test_real_file(self):
-        filename = os.path.join(os.path.dirname(__file__), 'test_sample.po')
+        filename = os.path.join(os.path.dirname(__file__), 'sample.po')
         self.assertDictEqual(parse_po_filename(filename), {
             ("Context\x04Message to translate", 0): "Message à traduire",
             ("Context\x04Message to translate", 1): "Messages à traduire",
