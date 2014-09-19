@@ -5,6 +5,9 @@ Description
 * Automatically reload translations when any .po file is modified.
 * Extract messages from templates and python files automatically or using a management command.
 
+.. image:: https://travis-ci.org/kmichel/po-localization.svg
+    :target: https://travis-ci.org/kmichel/po-localization
+
 ============
 Requirements
 ============
