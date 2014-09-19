@@ -148,7 +148,24 @@ msgstr ""
 msgid "test template"
 msgstr "template de test"
 """)
+                with self.settings(UPDATE_TRANSLATIONS_PRUNE_OBSOLETES=True):
+                    handle_settings_change()
+                    self.client.get('')
+                    with io.open(french_translation_filename, 'r', encoding='utf-8') as translation_file:
+                        self.assertEqual(
+                            translation_file.read(),
+"""#: models.py:12
+msgid "test field"
+msgstr "champ de test"
 
+#: models.py:13
+msgid "second field"
+msgstr ""
+
+#: templates/index.html:8
+msgid "test template"
+msgstr "template de test"
+""")
         finally:
             if os.path.exists(self.locale_path):
                 shutil.rmtree(self.locale_path)
