@@ -77,7 +77,14 @@ msgstr ""
 msgid "test template"
 msgstr ""
 
+#: templates/index.html:10
+msgid "%(counter)s item"
+msgid_plural "%(counter)s items"
+msgstr[0] ""
+msgstr[1] ""
+
 #: views.py:12
+msgctxt "view context"
 msgid "test view string"
 msgstr ""
 """)
@@ -91,17 +98,26 @@ msgstr "champ de test"
 msgid "test template"
 msgstr "template de test"
 
+msgid "%(counter)s item"
+msgid_plural "%(counter)s items"
+msgstr[0] "%(counter)s élément"
+msgstr[1] "%(counter)s éléments"
+
+msgctxt "view context"
 msgid "test view string"
 msgstr "chaîne de vue de test"
 """)
                 # No request triggered, still not translated
                 self.assertEqual("test field", translation.ugettext("test field"))
                 self.assertEqual("test template", translation.ugettext("test template"))
-                self.assertEqual("test view string", translation.ugettext("test view string"))
+                self.assertEqual("test view string", translation.pgettext("view context", "test view string"))
+                self.assertEqual("%(counter)s items", translation.ungettext("%(counter)s item", "%(counter)s items", 2))
                 # Trigger a request, should reload translations
                 self.assertEqual("chaîne de vue de test", self.client.get('').content.decode('utf-8'))
                 self.assertEqual("champ de test", translation.ugettext("test field"))
                 self.assertEqual("template de test", translation.ugettext("test template"))
+                self.assertEqual("chaîne de vue de test", translation.pgettext("view context", "test view string"))
+                self.assertEqual("%(counter)s éléments", translation.ungettext("%(counter)s item", "%(counter)s items", 2))
 
                 # Test file update
                 with io.open(os.path.join(self.temp_dir, 'test_app/models.py'), 'a', encoding='utf-8') as models_file:
@@ -122,7 +138,14 @@ msgstr ""
 msgid "test template"
 msgstr "template de test"
 
+#: templates/index.html:10
+msgid "%(counter)s item"
+msgid_plural "%(counter)s items"
+msgstr[0] "%(counter)s élément"
+msgstr[1] "%(counter)s éléments"
+
 #: views.py:12
+msgctxt "view context"
 msgid "test view string"
 msgstr "chaîne de vue de test"
 """)
@@ -133,6 +156,7 @@ msgstr "chaîne de vue de test"
                     self.assertEqual(
                         translation_file.read(),
 """#. obsolete entry
+msgctxt "view context"
 msgid "test view string"
 msgstr "cha\xeene de vue de test"
 
@@ -147,6 +171,12 @@ msgstr ""
 #: templates/index.html:8
 msgid "test template"
 msgstr "template de test"
+
+#: templates/index.html:10
+msgid "%(counter)s item"
+msgid_plural "%(counter)s items"
+msgstr[0] "%(counter)s élément"
+msgstr[1] "%(counter)s éléments"
 """)
                 with self.settings(UPDATE_TRANSLATIONS_PRUNE_OBSOLETES=True):
                     handle_settings_change()
@@ -165,6 +195,12 @@ msgstr ""
 #: templates/index.html:8
 msgid "test template"
 msgstr "template de test"
+
+#: templates/index.html:10
+msgid "%(counter)s item"
+msgid_plural "%(counter)s items"
+msgstr[0] "%(counter)s élément"
+msgstr[1] "%(counter)s éléments"
 """)
         finally:
             if os.path.exists(self.locale_path):

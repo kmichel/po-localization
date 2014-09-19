@@ -5,8 +5,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.http import HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import pgettext as _
 
 
 def test_view(request):
-    return HttpResponse(_('test view string'))
+    return HttpResponse(_('view context', 'test view string'))
