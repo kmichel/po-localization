@@ -43,7 +43,7 @@ class TemplateExtractorTestCase(TestCase):
         self.assertNotIn("ignored %(counter)s block translation with variable context", self.po_keys)
         self.assertNotIn("variable_context\x04ignored %(counter)s block translation with variable context", self.po_keys)
 
-    def ignore_filtered_constants(self):
+    def test_ignore_filtered_constants(self):
         self.assertNotIn("ignored translation with filter", self.po_keys)
         self.assertNotIn("ignored translation with filtered context", self.po_keys)
         self.assertNotIn("context\x04ignored translation with filtered context", self.po_keys)
