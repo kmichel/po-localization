@@ -322,9 +322,9 @@ msgstr ""
             ('Project-Id-Version', 'Django'),
             ('Report-Msgid-Bugs-To', ''),
             ('Language-Team', 'French <None>'),
-            (u'Language', 'fr'),
-            (u'MIME-Version', '1.0'),
-            (u'Content-Type', 'text/plain; charset=UTF-8'),
-            (u'Content-Transfer-Encoding', '8bit'),
-            (u'Plural-Forms', 'nplurals=2; plural=(n > 1)')])
+            ('Language', 'fr'),
+            ('MIME-Version', '1.0'),
+            ('Content-Type', 'text/plain; charset=UTF-8'),
+            ('Content-Transfer-Encoding', '8bit'),
+            ('Plural-Forms', 'nplurals=2; plural=(n > 1)')])
         self.assertEqual(po_file.get_nplurals(), 2)
