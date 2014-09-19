@@ -26,7 +26,7 @@ SETTINGS = {
     'ALLOWED_HOSTS': ['*'],
     'AUTO_RELOAD_TRANSLATIONS': True,
     'AUTO_UPDATE_TRANSLATIONS': True,
-    'UPDATE_TRANSLATIONS_APPS': (
+    'UPDATE_TRANSLATIONS_PACKAGES': (
         'test_app',
     ),
     'INSTALLED_APPS': (

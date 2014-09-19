@@ -24,7 +24,7 @@ def handle_settings_change():
     global translations_updater
     global translations_loader
     translations_updater = TranslationsUpdater(
-        root_paths=get_packages_paths(getattr(settings, 'UPDATE_TRANSLATIONS_APPS', ())),
+        root_paths=get_translations_update_roots(settings),
         locales=get_enabled_locales(settings),
         include_locations=getattr(settings, 'UPDATE_TRANSLATIONS_WITH_LOCATIONS', True),
         prune_obsoletes=getattr(settings, 'UPDATE_TRANSLATIONS_PRUNE_OBSOLETES', False))
@@ -35,7 +35,7 @@ def handle_settings_change():
 
     translations_loader = TranslationsLoader(
         get_enabled_locales(settings),
-        get_localization_paths(settings))
+        get_translations_reload_roots(settings))
 
     # Only load translations if not waiting for the first request
     if not getattr(settings, 'AUTO_RELOAD_TRANSLATIONS', settings.DEBUG):
@@ -49,7 +49,7 @@ def get_enabled_locales(settings):
     return ret
 
 
-def get_localization_paths(settings):
+def get_translations_reload_roots(settings):
     ret = []
     localization_packages = ['django.conf']
     # TODO: use app registry in django >= 1.7
@@ -59,6 +59,10 @@ def get_localization_paths(settings):
         if os.path.isdir(locale_path):
             ret.append(locale_path)
     return ret
+
+
+def get_translations_update_roots(settings):
+    return get_packages_paths(getattr(settings, 'UPDATE_TRANSLATIONS_PACKAGES', ()))
 
 
 def get_packages_paths(packages_import_paths, relative_path=''):

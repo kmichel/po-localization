@@ -30,8 +30,9 @@ Settings
     | Whether translation files should be checked for modifications and reloaded before each request.
 ``AUTO_UPDATE_TRANSLATIONS = False``
     | Whether translation files should be automatically created or updated from python files when the server reloads.
-``UPDATE_TRANSLATIONS_APPS = ()``
-    | List of apps to update, using the same format as ``INSTALLED_APPS``.
+``UPDATE_TRANSLATIONS_PACKAGES = ()``
+    | List of packages to update.
+    | A 'locale' folder containing all translation files will be created or updated in each of those packages.
 ``UPDATE_TRANSLATIONS_WITH_LOCATIONS = True``
     | Whether translation files should include the locations of the extracted messages.
 ``UPDATE_TRANSLATIONS_PRUNE_OBSOLETES = False``
