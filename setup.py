@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from distutils.core import setup
+from setuptools import setup
 
 __version__ = 'unknown'
 with open('po_localization/version.py') as version_file:
@@ -46,5 +46,5 @@ setup(
         'Topic :: Software Development :: Localization',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
-    requires=['django (>=1.6)'],
+    install_requires=['django>=1.6'],
 )
