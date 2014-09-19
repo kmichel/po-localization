@@ -257,6 +257,15 @@ msgstr[0] "Translated message"
 msgstr[1] "Translated messages"
 """)
 
+    def test_unexpected_continuation(self):
+        self._parse_and_expect_failure("""
+"Continuation"
+""")
+        self._parse_and_expect_failure("""
+msgctxt "context"
+"Continuation"
+""")
+
     def test_garbage_at_end(self):
         self._parse_and_expect_failure("""
 msgctxt "Context" GARBAGE

@@ -127,9 +127,7 @@ class Parser(object):
                     elif self.state == 'after msgstr[N]':
                         self.plural_translated_messages[self.current_plural_index] += unescape(match.group(4))
                     else:
-                        raise ParseError(
-                            filename, line_number, "Expected message continuation or valid keyword after '{}'",
-                            self.state)
+                        raise ParseError(filename, line_number, "Unexpected string continuation after '{}'", self.state)
                 else:
                     raise ParseError(filename, line_number, "Unexpected keyword: {}", match.group(2))
             except UnescapeError as e:
