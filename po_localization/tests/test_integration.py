@@ -102,6 +102,53 @@ msgstr "chaîne de vue de test"
                 self.assertEqual("chaîne de vue de test", self.client.get('').content.decode('utf-8'))
                 self.assertEqual("champ de test", translation.ugettext("test field"))
                 self.assertEqual("template de test", translation.ugettext("test template"))
+
+                # Test file update
+                with io.open(os.path.join(self.temp_dir, 'test_app/models.py'), 'a', encoding='utf-8') as models_file:
+                    models_file.write('    second_field=models.TextField(verbose_name=_(\'second field\'))')
+                self.client.get('')
+                with io.open(french_translation_filename, 'r', encoding='utf-8') as translation_file:
+                    self.assertEqual(
+                        translation_file.read(),
+"""#: models.py:12
+msgid "test field"
+msgstr "champ de test"
+
+#: models.py:13
+msgid "second field"
+msgstr ""
+
+#: templates/index.html:8
+msgid "test template"
+msgstr "template de test"
+
+#: views.py:12
+msgid "test view string"
+msgstr "chaîne de vue de test"
+""")
+                # Test file removal
+                os.unlink(os.path.join(self.temp_dir, 'test_app/views.py'))
+                self.client.get('')
+                with io.open(french_translation_filename, 'r', encoding='utf-8') as translation_file:
+                    self.assertEqual(
+                        translation_file.read(),
+"""#. obsolete entry
+msgid "test view string"
+msgstr "cha\xeene de vue de test"
+
+#: models.py:12
+msgid "test field"
+msgstr "champ de test"
+
+#: models.py:13
+msgid "second field"
+msgstr ""
+
+#: templates/index.html:8
+msgid "test template"
+msgstr "template de test"
+""")
+
         finally:
             if os.path.exists(self.locale_path):
                 shutil.rmtree(self.locale_path)

@@ -31,7 +31,12 @@ class FileWatcher(object):
         return ()
 
     def _check_for_changes(self):
-        for file_path in self.list_files():
+        files_list = set(self.list_files())
+        for file_path in self.file_mtimes.keys():
+            if file_path not in files_list:
+                self.is_dirty = True
+                del self.file_mtimes[file_path]
+        for file_path in files_list:
             if os.path.isfile(file_path):
                 file_mtime = get_file_mtime(file_path)
                 if file_path not in self.file_mtimes or self.file_mtimes[file_path] != file_mtime:
