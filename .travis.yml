@@ -10,5 +10,8 @@ env:
 install:
   - pip install -q django$DJANGO_VERSION
   - pip install -q .
+  - pip install coveralls
 script:
-  - python -m unittest discover
+  - coverage run --source=po_localization --omit=po_localization/tests/* --module unittest discover
+after_success:
+  - coveralls
