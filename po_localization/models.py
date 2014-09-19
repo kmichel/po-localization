@@ -25,7 +25,8 @@ def handle_settings_change():
     global translations_loader
     translations_updater = TranslationsUpdater(
         root_paths=get_translations_update_roots(settings),
-        locales=get_enabled_locales(settings),
+        locales=get_enabled_locales(settings,
+            excluded_locales=getattr(settings, 'UPDATE_TRANSLATIONS_EXCLUDED_LOCALES', ())),
         include_locations=getattr(settings, 'UPDATE_TRANSLATIONS_WITH_LOCATIONS', True),
         prune_obsoletes=getattr(settings, 'UPDATE_TRANSLATIONS_PRUNE_OBSOLETES', False))
 
@@ -42,10 +43,12 @@ def handle_settings_change():
         translations_loader.reload()
 
 
-def get_enabled_locales(settings):
+def get_enabled_locales(settings, excluded_locales=()):
     ret = []
     for language_code, language_name in settings.LANGUAGES:
-        ret.append(django.utils.translation.trans_real.to_locale(language_code))
+        locale = django.utils.translation.trans_real.to_locale(language_code)
+        if locale not in excluded_locales:
+            ret.append(locale)
     return ret
 
 

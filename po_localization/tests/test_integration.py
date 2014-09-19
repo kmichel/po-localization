@@ -29,12 +29,16 @@ SETTINGS = {
     'UPDATE_TRANSLATIONS_PACKAGES': (
         'test_app',
     ),
+    'UPDATE_TRANSLATIONS_EXCLUDED_LOCALES': (
+        'en',
+    ),
     'INSTALLED_APPS': (
         'test_app',
     ),
     'LANGUAGE_CODE': 'fr',
     'LANGUAGES': (
         ('fr', 'French'),
+        ('en', 'English'),
     ),
     'ROOT_URLCONF': 'test_app.urls',
 }
@@ -57,10 +61,12 @@ class IntegrationTestCase(SimpleTestCase):
                 handle_settings_change()
 
                 self.assertTrue(os.path.exists(self.locale_path))
-                translation_filename = os.path.join(self.locale_path, 'fr/LC_MESSAGES/django.po')
-                self.assertTrue(os.path.isfile(translation_filename))
+                french_translation_filename = os.path.join(self.locale_path, 'fr/LC_MESSAGES/django.po')
+                self.assertTrue(os.path.isfile(french_translation_filename))
+                english_translation_filename = os.path.join(self.locale_path, 'en/LC_MESSAGES/django.po')
+                self.assertFalse(os.path.exists(english_translation_filename))
 
-                with io.open(translation_filename, 'r', encoding='utf-8') as translation_file:
+                with io.open(french_translation_filename, 'r', encoding='utf-8') as translation_file:
                     self.assertEqual(
                         translation_file.read(),
 """#: models.py:12
@@ -76,7 +82,7 @@ msgid "test view string"
 msgstr ""
 """)
                 self.assertEqual("test field", translation.ugettext("test field"))
-                with io.open(translation_filename, 'w', encoding='utf-8') as translation_file:
+                with io.open(french_translation_filename, 'w', encoding='utf-8') as translation_file:
                     translation_file.write(
 """
 msgid "test field"

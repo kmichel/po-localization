@@ -34,6 +34,9 @@ Settings
     | List of packages to update using the management command or when auto-update is enabled.
     | A 'locale' folder containing all translation files will be created or updated in each of those packages.
     | This 'locale' folder should be added to ``LOCALE_PATHS`` if the package is not a Django app.
+``UPDATE_TRANSLATIONS_EXCLUDED_LOCALES = ()``
+    | List of locales to exclude from update.
+    | All locales from languages in ``LANGUAGES`` which are not in this exclusion list will be updated.
 ``UPDATE_TRANSLATIONS_WITH_LOCATIONS = True``
     | Whether translation files should include the locations of the extracted messages.
 ``UPDATE_TRANSLATIONS_PRUNE_OBSOLETES = False``
