@@ -9,13 +9,17 @@ Description
     :target: https://travis-ci.org/kmichel/po-localization
     :alt: Build Status
 
-.. image:: https://pypip.in/py_versions/po_localization/badge.svg
-    :target: https://pypi.python.org/pypi/po_localization/
-    :alt: Supported Python Versions
+.. image:: https://coveralls.io/repos/kmichel/po-localization/badge.png
+    :target: https://coveralls.io/r/kmichel/po-localization
+    :alt: Coverage
 
 .. image:: https://pypip.in/version/po_localization/badge.svg
     :target: https://pypi.python.org/pypi/po_localization/
     :alt: Latest Release
+
+.. image:: https://pypip.in/py_versions/po_localization/badge.svg
+    :target: https://pypi.python.org/pypi/po_localization/
+    :alt: Supported Python Versions
 
 .. image:: https://pypip.in/license/po_localization/badge.svg
     :target: https://pypi.python.org/pypi/po_localization/
