@@ -9,7 +9,7 @@ from django.conf import settings
 
 if not settings.configured:
     settings.configure()
-    django_setup = getattr(django, 'setup', lambda:None)
+    django_setup = getattr(django, 'setup', lambda: None)
     django_setup()
 
 import io
@@ -67,6 +67,10 @@ class IntegrationTestCase(SimpleTestCase):
 msgid "test field"
 msgstr ""
 
+#: templates/index.html:8
+msgid "test template"
+msgstr ""
+
 #: views.py:12
 msgid "test view string"
 msgstr ""
@@ -78,14 +82,20 @@ msgstr ""
 msgid "test field"
 msgstr "champ de test"
 
+msgid "test template"
+msgstr "template de test"
+
 msgid "test view string"
 msgstr "chaîne de vue de test"
 """)
                 # No request triggered, still not translated
                 self.assertEqual("test field", translation.ugettext("test field"))
+                self.assertEqual("test template", translation.ugettext("test template"))
+                self.assertEqual("test view string", translation.ugettext("test view string"))
                 # Trigger a request, should reload translations
                 self.assertEqual("chaîne de vue de test", self.client.get('').content.decode('utf-8'))
                 self.assertEqual("champ de test", translation.ugettext("test field"))
+                self.assertEqual("template de test", translation.ugettext("test template"))
         finally:
             if os.path.exists(self.locale_path):
                 shutil.rmtree(self.locale_path)

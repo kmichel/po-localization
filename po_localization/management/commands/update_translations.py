@@ -11,5 +11,6 @@ class Command(BaseCommand):
     help = 'Update translation files'
 
     def handle(self, *args, **options):
-        from ...models import update_apps_translations
-        update_apps_translations()
+        from ...models import translations_updater
+
+        translations_updater.reload(force=True)

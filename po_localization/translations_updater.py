@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding=utf-8
 
 from __future__ import absolute_import
@@ -7,20 +6,42 @@ from __future__ import unicode_literals
 
 import io
 import os
-from django.utils.importlib import import_module
-from .extractor import extract_messages
-from .po_file import PoFile
+from . import python_extractor, template_extractor
+from .file_watcher import FileWatcher
 from .parser import Parser
+from .po_file import  PoFile
+
+extractors = {
+    '.html': template_extractor.extract_messages,
+    '.txt': template_extractor.extract_messages,
+    '.py': python_extractor.extract_messages
+}
+""":type extractors: dict[str, (str, str, str) -> None]"""
 
 
-def update_modules_translations(
-        modules_import_paths, domain='django', locales=(), locales_path='locale',
-        update_all=True, include_locations=True, prune_obsoletes=False):
-    for module_import_path in modules_import_paths:
-        module = import_module(module_import_path)
-        app_path = os.path.dirname(module.__file__)
-        update_translations(
-            app_path, domain, locales, locales_path, update_all, include_locations, prune_obsoletes)
+class TranslationsUpdater(FileWatcher):
+    def __init__(self, root_paths, locales=(), include_locations=True, prune_obsoletes=False):
+        super(TranslationsUpdater, self).__init__()
+        self.root_paths = root_paths
+        self.locales = locales
+        self.include_locations = include_locations
+        self.prune_obsoletes = prune_obsoletes
+
+    def do_load(self):
+        for root_path in self.root_paths:
+            update_translations(
+                root_path=root_path,
+                locales=self.locales,
+                include_locations=self.include_locations,
+                prune_obsoletes=self.prune_obsoletes)
+
+    def list_files(self):
+        for root_path in self.root_paths:
+            for dirpath, dirnames, filenames in os.walk(root_path):
+                for filename in filenames:
+                    extension = os.path.splitext(filename)[1]
+                    if extension in extractors:
+                        yield os.path.join(dirpath, filename)
 
 
 def update_translations(
@@ -31,10 +52,12 @@ def update_translations(
     locales_path = os.path.join(root_path, locales_path)
     for dirpath, dirnames, filenames in os.walk(root_path):
         for filename in filenames:
-            if filename.endswith('.py'):
+            extension = os.path.splitext(filename)[1]
+            extractor = extractors.get(extension, None)
+            if extractor is not None:
                 full_filename = os.path.join(dirpath, filename)
                 printable_filename = full_filename[root_path_length:]
-                extract_messages(full_filename, base_po_file, printable_filename=printable_filename)
+                extractor(full_filename, base_po_file, printable_filename=printable_filename)
     for locale in locales:
         locale_path = os.path.join(locales_path, locale)
         if not os.path.exists(locale_path):

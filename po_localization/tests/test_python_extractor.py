@@ -7,10 +7,10 @@ from __future__ import unicode_literals
 import os
 from unittest import TestCase
 from po_localization.po_file import PoFile
-from po_localization.extractor import extract_messages
+from po_localization.python_extractor import extract_messages
 
 
-class ExtractorTestCase(TestCase):
+class PythonExtractorTestCase(TestCase):
     def test_full_module(self):
         po_file = PoFile()
         extract_messages(os.path.join(os.path.dirname(__file__), 'sample.py'), po_file, 'sample.py')

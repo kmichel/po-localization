@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+{% trans "ignored translation before loading i18n" %}
+
+{% load i18n %}
+<html>
+<head>
+    <title>Sample</title>
+</head>
+<body>
+{% trans "simple translation" %}
+
+{% trans "translation to variable" as  translated_variable %}
+
+{% trans "translation with context" context "context" %}
+
+{% trans ignored_variable_translation %}
+
+{% trans "ignored translation with variable context" context variable_context %}
+
+{% blocktrans %}simple block translation{% endblocktrans %}
+
+{% blocktrans context "context" %}block translation with context{% endblocktrans %}
+
+{% blocktrans context variable_context %}ignored block translation with variable context{% endblocktrans %}
+
+{% blocktrans count counter=counter_var %}{{counter}} block translation{% plural %}{{counter} block translations{% endblocktrans %}
+
+{% blocktrans count counter=counter_var context "context"%}{{counter}} block translation with context{% plural %}{{counter} block translations with context{% endblocktrans %}
+
+{% blocktrans count counter=counter_var context variable_context %}ignored {{counter}} block translation with variable context{% plural %}ignored {{counter} block translations with variable context{% endblocktrans %}
+
+{% if condition %}
+    {% trans "translation in a condition" %}
+{% endif %}
+
+{% block 'block' %}
+    {% trans "translation in a block" %}
+{% endblock %}
+
+{% comment %}
+    {% trans "ignored translation in a comment" %}
+{% endcomment %}
+</body>
+</html>
+

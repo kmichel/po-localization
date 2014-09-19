@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from .models import handle_settings_change, load_initial_translations
+from .models import handle_settings_change
 
 try:
     from django.apps import AppConfig
@@ -19,4 +19,3 @@ class PoLocalizationConfig(AppConfig):
 
     def ready(self):
         handle_settings_change()
-        load_initial_translations()

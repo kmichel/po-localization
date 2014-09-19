@@ -133,6 +133,7 @@ class TranslationEntry(object):
             print('msgstr "{}"'.format(self.translations.get(0, '')), file=fp)
         return True
 
+
 def get_msgid(message, context=None):
     if context is not None:
         return '{}\x04{}'.format(context, message)

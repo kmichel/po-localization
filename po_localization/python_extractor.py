@@ -13,7 +13,16 @@ NGETTEXT_FUNCTIONS = ('ngettext', 'ungettext', 'ngettext_lazy', 'ungettext_lazy'
 NPGETTEXT_FUNCTIONS = ('npgettext', 'npgettext_lazy')
 
 
-class MessageExtractor(ast.NodeVisitor):
+def extract_messages(filename, po_file, printable_filename=None):
+    printable_filename = filename if printable_filename is None else printable_filename
+    with io.open(filename, mode='rb') as python_file:
+        file_content = python_file.read()
+    tree = ast.parse(file_content, printable_filename)
+    extractor = PythonExtractor(printable_filename, po_file)
+    extractor.visit(tree)
+
+
+class PythonExtractor(ast.NodeVisitor):
     def __init__(self, filename, po_file):
         self.filename = filename
         self.aliases = ScopedAliases()
@@ -133,12 +142,3 @@ def _get_dotted_name(node, suffix=''):
         return _get_dotted_name(node.value, '.' + node.attr + suffix)
     else:
         return None
-
-
-def extract_messages(filename, po_file, printable_filename=None):
-    printable_filename = filename if printable_filename is None else printable_filename
-    with io.open(filename, mode='rb') as python_file:
-        file_content = python_file.read()
-        tree = ast.parse(file_content, printable_filename)
-        extractor = MessageExtractor(printable_filename, po_file)
-        extractor.visit(tree)

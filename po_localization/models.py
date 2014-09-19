@@ -12,26 +12,34 @@ from django.dispatch import receiver
 from django.utils._os import upath
 from django.utils.importlib import import_module
 import django.utils.translation.trans_real
-from . import loader
-from .updater import update_modules_translations
+from .translations_loader import TranslationsLoader
+from .translations_updater import TranslationsUpdater
 
 
-def update_apps_translations():
-    update_modules_translations(
-        modules_import_paths=getattr(settings, 'UPDATE_TRANSLATIONS_APPS', ()),
+translations_updater = None
+translations_loader = None
+
+
+def handle_settings_change():
+    global translations_updater
+    global translations_loader
+    translations_updater = TranslationsUpdater(
+        root_paths=get_packages_paths(getattr(settings, 'UPDATE_TRANSLATIONS_APPS', ())),
         locales=get_enabled_locales(settings),
         include_locations=getattr(settings, 'UPDATE_TRANSLATIONS_WITH_LOCATIONS', True),
         prune_obsoletes=getattr(settings, 'UPDATE_TRANSLATIONS_PRUNE_OBSOLETES', False))
 
-
-def handle_settings_change():
+    # This is responsible for updating translations after server reload (after python file modification)
     if getattr(settings, 'AUTO_UPDATE_TRANSLATIONS', False):
-        update_apps_translations()
+        translations_updater.reload()
 
-    global translation_loader
-    translation_loader = loader.TranslationLoader(
+    translations_loader = TranslationsLoader(
         get_enabled_locales(settings),
         get_localization_paths(settings))
+
+    # Only load translations if not waiting for the first request
+    if not getattr(settings, 'AUTO_RELOAD_TRANSLATIONS', settings.DEBUG):
+        translations_loader.reload()
 
 
 def get_enabled_locales(settings):
@@ -43,38 +51,33 @@ def get_enabled_locales(settings):
 
 def get_localization_paths(settings):
     ret = []
-    localization_modules = ['django.conf']
+    localization_packages = ['django.conf']
     # TODO: use app registry in django >= 1.7
-    localization_modules.extend(reversed(settings.INSTALLED_APPS))
-    ret.extend(get_modules_localization_paths(localization_modules))
+    localization_packages.extend(reversed(settings.INSTALLED_APPS))
+    ret.extend(get_packages_paths(localization_packages, 'locale'))
     for locale_path in reversed(settings.LOCALE_PATHS):
         if os.path.isdir(locale_path):
             ret.append(locale_path)
     return ret
 
 
-def get_modules_localization_paths(module_paths):
+def get_packages_paths(packages_import_paths, relative_path=''):
     ret = []
-    for module_path in reversed(module_paths):
-        module = import_module(module_path)
-        module_locale_path = os.path.join(os.path.dirname(upath(module.__file__)), 'locale')
-        ret.append(module_locale_path)
+    for package_import_path in packages_import_paths:
+        module = import_module(package_import_path)
+        module_path = os.path.dirname(upath(module.__file__))
+        ret.append(os.path.join(module_path, relative_path))
     return ret
 
 
 @receiver(request_started)
 def reload_before_request(sender, **kwargs):
+    if getattr(settings, 'AUTO_UPDATE_TRANSLATIONS', False):
+        translations_updater.reload()
     if getattr(settings, 'AUTO_RELOAD_TRANSLATIONS', settings.DEBUG):
-        translation_loader.reload()
+        translations_loader.reload()
 
 
-def load_initial_translations():
-    # Only load them if not waiting
-    if not getattr(settings, 'AUTO_RELOAD_TRANSLATIONS', settings.DEBUG):
-        translation_loader.reload()
-
-
-# Only load translations now if django is older than 1.7
+# Only auto-initialize now if Django is older than 1.7
 if django_version[0] == 1 and django_version[1] < 7:
     handle_settings_change()
-    load_initial_translations()
