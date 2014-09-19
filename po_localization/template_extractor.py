@@ -32,7 +32,7 @@ def extract_messages(filename, po_file, printable_filename=None):
                 message, singular_vars = wrapped_node.render_token_list(wrapped_node.singular)
                 context, context_is_variable = get_context_and_variability(wrapped_node)
                 if not context_is_variable:
-                    if wrapped_node.plural is not None:
+                    if wrapped_node.countervar and wrapped_node.counter:
                         plural, plural_vars = wrapped_node.render_token_list(wrapped_node.plural)
                         po_file.add_entry(message, plural, context).add_location(lexer.origin, node.lineno)
                     else:
