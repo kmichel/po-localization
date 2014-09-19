@@ -13,4 +13,4 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         from ...models import translations_updater
 
-        translations_updater.reload(force=True)
+        translations_updater.reload()

@@ -15,11 +15,10 @@ class FileWatcher(object):
         self.is_dirty = True
         self.lock = threading.Lock()
 
-    def reload(self, force=False):
+    def reload(self):
         with self.lock:
-            if force:
-                self.is_dirty = True
-            self._check_for_changes()
+            if not self.is_dirty:
+                self._check_for_changes()
             if self.is_dirty:
                 self.do_load()
                 self.is_dirty = False
