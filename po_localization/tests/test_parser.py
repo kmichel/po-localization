@@ -7,8 +7,8 @@ from __future__ import unicode_literals
 import os
 from io import StringIO
 from unittest import TestCase
-from po_localization.parser import ParseError, parse_po_file, parse_po_filename
-
+from po_localization.parser import Parser, ParseError, parse_po_file, parse_po_filename
+from po_localization.po_file import PoFile
 
 class ParserTestCase(TestCase):
     def _parse_and_expect(self, file_content, expected_catalog):
@@ -290,3 +290,32 @@ msgstr[1] "Translated messages"
             ("Context\x04Message to translate", 0): "Message à traduire",
             ("Context\x04Message to translate", 1): "Messages à traduire",
         })
+
+    def test_header_parsing(self):
+        file_object = StringIO(r"""
+msgid ""
+msgstr ""
+"Project-Id-Version: Django\n"
+"Report-Msgid-Bugs-To: \n"
+"Language-Team: French <None>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
+""")
+        po_file = PoFile()
+        self.assertListEqual(po_file.header_fields, [])
+        self.assertIsNone(po_file.get_nplurals())
+        parser = Parser(po_file)
+        parser.parse_po_file(file_object)
+        self.assertListEqual(po_file.header_fields, [
+            ('Project-Id-Version', 'Django'),
+            ('Report-Msgid-Bugs-To', ''),
+            ('Language-Team', 'French <None>'),
+            (u'Language', 'fr'),
+            (u'MIME-Version', '1.0'),
+            (u'Content-Type', 'text/plain; charset=UTF-8'),
+            (u'Content-Transfer-Encoding', '8bit'),
+            (u'Plural-Forms', 'nplurals=2; plural=(n > 1)')])
+        self.assertEqual(po_file.get_nplurals(), 2)

@@ -10,7 +10,7 @@ from .strings import escape
 class PoFile(object):
     def __init__(self):
         self.header_fields = []
-        self.header_index = {}
+        self._header_index = {}
         self.entries = {}
 
     def clone(self):
@@ -21,10 +21,10 @@ class PoFile(object):
         return po_file
 
     def add_header_field(self, field, value):
-        if field in self.header_index:
-            self.header_fields[self.header_index] = (field, value)
+        if field in self._header_index:
+            self.header_fields[self._header_index] = (field, value)
         else:
-            self.header_index[field] = len(self.header_fields)
+            self._header_index[field] = len(self.header_fields)
             self.header_fields.append((field, value))
 
     def add_entry(self, message, plural=None, context=None):
@@ -48,7 +48,7 @@ class PoFile(object):
             for field, value in self.header_fields:
                 print(r'"{}: {}\n"'.format(field, value), file=fp)
             needs_blank_line = True
-        nplurals = self._get_nplurals()
+        nplurals = self.get_nplurals()
         for entry in sorted(self.entries.values(), key=lambda e: e.locations):
             if needs_blank_line:
                 print('', file=fp)
@@ -61,9 +61,11 @@ class PoFile(object):
             entry.fill_catalog(catalog)
         return catalog
 
-    def _get_nplurals(self):
-        for field, value in self.header_fields:
-            if field == 'Plural-forms':
+    def get_nplurals(self):
+        plural_field_index = self._header_index.get('Plural-Forms', -1)
+        if plural_field_index != -1:
+            field, value = self.header_fields[plural_field_index]
+            if field == 'Plural-Forms':
                 for pair in value.split(';'):
                     parts = pair.partition('=')
                     if parts[0].strip() == 'nplurals':
