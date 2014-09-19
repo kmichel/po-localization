@@ -32,7 +32,7 @@ class FileWatcher(object):
 
     def _check_for_changes(self):
         files_list = set(self.list_files())
-        for file_path in self.file_mtimes.keys():
+        for file_path in list(self.file_mtimes.keys()):
             if file_path not in files_list:
                 self.is_dirty = True
                 del self.file_mtimes[file_path]
