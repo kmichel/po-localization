@@ -11,6 +11,6 @@ class Command(BaseCommand):
     help = 'Update translation files'
 
     def handle(self, *args, **options):
-        from ...models import translations_updater
-
-        translations_updater.reload()
+        from ...middleware import PoLocalizationMiddleware
+        po_localization_middleware = PoLocalizationMiddleware()
+        po_localization_middleware.translations_updater.do_load()

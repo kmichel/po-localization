@@ -18,9 +18,7 @@ import shutil
 import sys
 import tempfile
 from django.test import SimpleTestCase
-from django.utils.importlib import import_module
 from django.utils import translation
-from po_localization.models import handle_settings_change
 
 SETTINGS = {
     'ALLOWED_HOSTS': ['*'],
@@ -31,6 +29,9 @@ SETTINGS = {
     ),
     'UPDATE_TRANSLATIONS_EXCLUDED_LOCALES': (
         'en',
+    ),
+    'MIDDLEWARE_CLASSES': (
+        'po_localization.middleware.PoLocalizationMiddleware',
     ),
     'INSTALLED_APPS': (
         'test_app',
@@ -49,7 +50,7 @@ class IntegrationTestCase(SimpleTestCase):
         self.temp_dir = tempfile.mkdtemp()
         shutil.copytree(os.path.join(os.path.dirname(__file__), 'test_app'), os.path.join(self.temp_dir, 'test_app'))
         sys.path.insert(0, self.temp_dir)
-        self.locale_path = self.get_test_app_locale_path()
+        self.locale_path = os.path.join(self.temp_dir, 'test_app/locale')
 
     def tearDown(self):
         sys.path.remove(self.temp_dir)
@@ -58,8 +59,7 @@ class IntegrationTestCase(SimpleTestCase):
     def test_simple(self):
         try:
             with self.settings(**SETTINGS):
-                handle_settings_change()
-
+                self.client.get('')
                 self.assertTrue(os.path.exists(self.locale_path))
                 french_translation_filename = os.path.join(self.locale_path, 'fr/LC_MESSAGES/django.po')
                 self.assertTrue(os.path.isfile(french_translation_filename))
@@ -179,7 +179,6 @@ msgstr[0] "%(counter)s élément"
 msgstr[1] "%(counter)s éléments"
 """)
                 with self.settings(UPDATE_TRANSLATIONS_PRUNE_OBSOLETES=True):
-                    handle_settings_change()
                     self.client.get('')
                     with io.open(french_translation_filename, 'r', encoding='utf-8') as translation_file:
                         self.assertEqual(
@@ -205,8 +204,3 @@ msgstr[1] "%(counter)s éléments"
         finally:
             if os.path.exists(self.locale_path):
                 shutil.rmtree(self.locale_path)
-
-    def get_test_app_locale_path(self):
-        test_app = import_module('test_app')
-        test_app_path = os.path.dirname(test_app.__file__)
-        return os.path.join(test_app_path, 'locale')

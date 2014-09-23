@@ -11,9 +11,9 @@ from .file_watcher import FileWatcher
 
 
 class TranslationsLoader(FileWatcher):
-    def __init__(self, locales, locale_paths):
-        self.locales = locales
+    def __init__(self, locale_paths=(), locales=()):
         self.locale_paths = locale_paths
+        self.locales = locales
         super(TranslationsLoader, self).__init__()
 
     def do_load(self):

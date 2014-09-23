@@ -9,7 +9,7 @@ import os
 from . import python_extractor, template_extractor
 from .file_watcher import FileWatcher
 from .parser import Parser
-from .po_file import  PoFile
+from .po_file import PoFile
 
 extractors = {
     '.html': template_extractor.extract_messages,
@@ -20,7 +20,7 @@ extractors = {
 
 
 class TranslationsUpdater(FileWatcher):
-    def __init__(self, root_paths, locales=(), include_locations=True, prune_obsoletes=False):
+    def __init__(self, root_paths=(), locales=(), include_locations=True, prune_obsoletes=False):
         super(TranslationsUpdater, self).__init__()
         self.root_paths = root_paths
         self.locales = locales
