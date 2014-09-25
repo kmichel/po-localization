@@ -21,8 +21,7 @@ class FileWatcher(object):
 
     def check(self):
         with self.lock:
-            if not self.is_dirty:
-                self._check_for_changes()
+            self._check_for_changes()
             if self.is_dirty:
                 self.operator.execute()
                 self.is_dirty = False

@@ -18,6 +18,7 @@ import os
 import shutil
 import sys
 import tempfile
+import time
 from django.test import SimpleTestCase
 from django.utils import translation
 from po_localization.tests.subtest import SubprocessTestCase
@@ -91,6 +92,8 @@ msgid "test view string"
 msgstr ""
 """)
             self.assertEqual("test field", translation.ugettext("test field"))
+            # This sleep is required because mtimes do not have a high enough resolution
+            time.sleep(1)
             with io.open(french_translation_filename, 'w', encoding='utf-8') as translation_file:
                 translation_file.write(
 """
