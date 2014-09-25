@@ -8,11 +8,11 @@ env:
   - DJANGO_VERSION="<1.7"
   - DJANGO_VERSION="<1.8"
 install:
-  - pip install -q django$DJANGO_VERSION
-  - pip install -q .
+  - pip install django$DJANGO_VERSION
+  - pip install .
   - pip install coveralls
 script:
   - coverage run --module unittest discover
-  - coverage combine
 after_success:
+  - coverage combine
   - coveralls
