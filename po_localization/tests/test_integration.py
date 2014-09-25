@@ -19,6 +19,7 @@ import sys
 import tempfile
 from django.test import SimpleTestCase
 from django.utils import translation
+from po_localization.tests.subtest import SubprocessTestCase
 
 SETTINGS = {
     'ALLOWED_HOSTS': ['*'],
@@ -45,7 +46,7 @@ SETTINGS = {
 }
 
 
-class IntegrationTestCase(SimpleTestCase):
+class IntegrationTestCase(SubprocessTestCase, SimpleTestCase):
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
         shutil.copytree(os.path.join(os.path.dirname(__file__), 'test_app'), os.path.join(self.temp_dir, 'test_app'))
