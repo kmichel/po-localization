@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 import io
 import os
 from . import python_extractor, template_extractor
-from .file_watcher import FileWatcher
 from .parser import Parser
 from .po_file import PoFile
 

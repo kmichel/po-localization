@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 import os
 import django.utils.translation.trans_real
 from . import parser
-from .file_watcher import FileWatcher
 
 
 class TranslationsLoader(object):
