@@ -146,4 +146,11 @@ class ParseError(Exception):
         super(ParseError, self).__init__(filename, line_number, message)
 
     def __str__(self):
-        return "{}:{}: {}".format(self.filename, self.line_number, self.parse_error_message)
+        if self.filename and self.line_number:
+            return "{}:{}: {}".format(self.filename, self.line_number, self.parse_error_message)
+        elif self.filename:
+            return "{}: {}".format(self.filename, self.parse_error_message)
+        elif self.line_number:
+            return "line {}: {}".format(self.line_number, self.parse_error_message)
+        else:
+            return self.parse_error_message

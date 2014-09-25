@@ -328,3 +328,25 @@ msgstr ""
             ('Content-Transfer-Encoding', '8bit'),
             ('Plural-Forms', 'nplurals=2; plural=(n > 1)')])
         self.assertEqual(po_file.get_nplurals(), 2)
+
+    def test_exception_message(self):
+        try:
+            raise ParseError("filename.po", 42, "the error message")
+        except ParseError as error:
+            self.assertEqual("filename.po:42: the error message", "{}".format(error))
+
+        try:
+            raise ParseError("filename.po", None, "unexpected end of file")
+        except ParseError as error:
+            self.assertEqual("filename.po: unexpected end of file", "{}".format(error))
+
+        try:
+            raise ParseError(None, 42, "the error message")
+        except ParseError as error:
+            self.assertEqual("line 42: the error message", "{}".format(error))
+
+        try:
+            raise ParseError(None, None, "the error message")
+        except ParseError as error:
+            self.assertEqual("the error message", "{}".format(error))
+
