@@ -4,6 +4,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from io import StringIO
 from .strings import escape
 
 
@@ -22,7 +23,7 @@ class PoFile(object):
 
     def add_header_field(self, field, value):
         if field in self._header_index:
-            self.header_fields[self._header_index] = (field, value)
+            self.header_fields[self._header_index[field]] = (field, value)
         else:
             self._header_index[field] = len(self.header_fields)
             self.header_fields.append((field, value))
@@ -49,11 +50,16 @@ class PoFile(object):
                 print(r'"{}: {}\n"'.format(field, value), file=fp)
             needs_blank_line = True
         nplurals = self.get_nplurals()
-        for entry in sorted(self.entries.values(), key=lambda e: e.locations):
+        for entry in sorted(self.entries.values(), key=get_entry_sort_key):
             if needs_blank_line:
                 print('', file=fp)
             needs_blank_line = entry.dump(
                 fp, nplurals, include_locations=include_locations, prune_obsolete=prune_obsoletes)
+
+    def dumps(self, include_locations=True, prune_obsoletes=False):
+        string_file = StringIO()
+        self.dump(string_file, include_locations, prune_obsoletes)
+        return string_file.getvalue()
 
     def get_catalog(self):
         catalog = {}
@@ -141,3 +147,6 @@ def get_msgid(message, context=None):
         return '{}\x04{}'.format(context, message)
     else:
         return message
+
+def get_entry_sort_key(entry):
+    return entry.locations, entry.context if entry.context else '', entry.message
