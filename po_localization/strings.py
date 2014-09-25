@@ -36,10 +36,8 @@ def _escape_char(match):
         return r'\v'
     elif char == '\\':
         return r'\\'
-    elif char == '"':
-        return r'\"'
     else:
-        return char
+        return r'\"'
 
 
 def unescape(escaped_string):

@@ -27,11 +27,11 @@ class TranslationsLoader(object):
 
     def list_files(self):
         for locale in self.locales:
-            for file_path in self._get_translation_files(locale, include_missing=True):
+            for file_path in self._get_translation_files(locale):
                 yield file_path
 
-    def _get_translation_files(self, locale, include_missing=False):
+    def _get_translation_files(self, locale):
         for locale_path in self.locale_paths:
             translation_path = os.path.join(locale_path, locale, 'LC_MESSAGES/django.po')
-            if include_missing or os.path.isfile(translation_path):
+            if os.path.isfile(translation_path):
                 yield translation_path

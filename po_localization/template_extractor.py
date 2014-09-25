@@ -46,10 +46,9 @@ class MessageParser(template.Parser):
         minimal_tags['load'] = load_i18n_tag
         minimal_tags['comment'] = self.tags['comment']
         self.tags = minimal_tags
-        self.filters = collections.defaultdict(lambda: dummy_filter)
 
     def find_filter(self, filter_name):
-        return dummy_filter
+        return None
 
     def compile_filter(self, token):
         return MessageFilterExpression(token, self)
@@ -68,10 +67,6 @@ def load_i18n_tag(parser, token):
         library.tags['blocktrans'] = lineno_tag(original_library.tags['blocktrans'])
         parser.add_library(library)
     return template.Node()
-
-
-def dummy_filter(value):
-    return value
 
 
 def dummy_tag(parser, token):
