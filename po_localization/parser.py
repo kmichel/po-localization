@@ -110,8 +110,8 @@ class Parser(object):
                             raise ParseError(filename, line_number, "Missing plural message index after keyword")
                         self.current_plural_index = int(match.group(3))
                         if self.current_plural_index in self.plural_translated_messages:
-                            raise ParseError(filename, line_number, "Duplicate plural message index: {}",
-                                self.current_plural_index)
+                            raise ParseError(filename, line_number,
+                                "Duplicate plural message index: {}".format(self.current_plural_index))
                         self.plural_translated_messages[self.current_plural_index] = unescape(match.group(4))
                         self.state = 'after msgstr[N]'
                 elif match.group(2) is None:
@@ -127,11 +127,12 @@ class Parser(object):
                     elif self.state == 'after msgstr[N]':
                         self.plural_translated_messages[self.current_plural_index] += unescape(match.group(4))
                     else:
-                        raise ParseError(filename, line_number, "Unexpected string continuation after '{}'", self.state)
+                        raise ParseError(filename, line_number,
+                            "Unexpected string continuation after '{}'".format(self.state))
                 else:
-                    raise ParseError(filename, line_number, "Unexpected keyword: {}", match.group(2))
+                    raise ParseError(filename, line_number, "Unexpected keyword: {}".format(match.group(2)))
             except UnescapeError as e:
-                raise ParseError(filename, line_number, "{}", e)
+                raise ParseError(filename, line_number, e)
         self._store_pending_data()
         if self.state in ('after msgctxt', 'after msgid', 'after msgid_plural'):
             raise ParseError(filename, None, "Unexpected end of file")
@@ -139,14 +140,10 @@ class Parser(object):
 
 class ParseError(Exception):
     def __init__(self, filename, line_number, message, *args):
+        self.filename = filename
         self.line_number = line_number
-        formatted_message = message.format(*args)
-        if filename is None:
-            if line_number is not None:
-                formatted_message = "At line {}: {}".format(line_number, formatted_message)
-        else:
-            if line_number is None:
-                formatted_message = "In {}: {}".format(filename, formatted_message)
-            else:
-                formatted_message = "At {}:{}: {}".format(filename, line_number, formatted_message)
-        super(ParseError, self).__init__(formatted_message)
+        self.parse_error_message = message
+        super(ParseError, self).__init__(filename, line_number, message)
+
+    def __str__(self):
+        return "{}:{}: {}".format(self.filename, self.line_number, self.parse_error_message)
