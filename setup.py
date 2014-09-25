@@ -16,10 +16,12 @@ setup(
         'po_localization.management',
         'po_localization.management.commands',
         'po_localization.tests',
-        'po_localization.tests.test_app'],
+        'po_localization.tests.test_app',
+        'po_localization.tests.test_project'],
     package_data={
         'po_localization.tests': ['*.html', '*.po'],
         'po_localization.tests.test_app': ['templates/*.html'],
+        'po_localization.tests.test_project': ['locale/fr/LC_MESSAGES/*.po'],
     },
     version=__version__,
     description='Localize Django applications without compiling .po files',

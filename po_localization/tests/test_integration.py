@@ -27,6 +27,7 @@ class IntegrationTestCase(SubprocessTestCase, SimpleTestCase):
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
         shutil.copytree(os.path.join(os.path.dirname(__file__), 'test_app'), os.path.join(self.temp_dir, 'test_app'))
+        shutil.copytree(os.path.join(os.path.dirname(__file__), 'test_project'), os.path.join(self.temp_dir, 'test_project'))
         sys.path.insert(0, self.temp_dir)
         self.locale_path = os.path.join(self.temp_dir, 'test_app/locale')
 
@@ -221,3 +222,26 @@ msgstr[1] "%(counter)s éléments"
             self.assertFalse(os.path.exists(self.locale_path))
             management.call_command('update_translations')
             self.assertTrue(os.path.exists(self.locale_path))
+
+    def test_custom_locale_paths(self):
+        local_settings = {
+            'AUTO_RELOAD_TRANSLATIONS': True,
+            'INSTALLED_APPS': (
+                'po_localization',
+            ),
+            'MIDDLEWARE_CLASSES': (
+                'po_localization.middleware.PoLocalizationMiddleware',
+            ),
+            'LOCALE_PATHS': (
+                os.path.join(self.temp_dir, 'test_project/locale'),
+            ),
+            'LANGUAGE_CODE': 'fr',
+            'LANGUAGES': (
+                ('fr', 'French'),
+                ('en', 'English'),
+            ),
+            'ROOT_URLCONF': 'test_project.urls'
+        }
+        with self.settings(**local_settings):
+            response = self.client.get('')
+            self.assertEqual("chaîne de test de projet", response.content.decode('utf-8'))
