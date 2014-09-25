@@ -4,6 +4,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import base64
 import os
 import pickle
 import subprocess
@@ -32,11 +33,15 @@ class SubprocessTestCase(TestCase):
                 subtest_thunk = os.path.join(os.path.dirname(__file__), 'subtest_thunk.py')
                 args = [sys.executable, subtest_thunk, test_module_name, test_class_name, test_method_name]
                 proc = subprocess.Popen(args, stdout=subprocess.PIPE)
-                out_data, err_data = proc.communicate()
+                stdout_content, nothing = proc.communicate()
                 if proc.returncode != 0:
+                    print_bytes(stdout_content)
                     raise subprocess.CalledProcessError(proc.returncode, args)
                 else:
-                    result_actions = pickle.loads(out_data)
+                    user_stdout_content, separator, encoded_data = stdout_content.rpartition(b'-')
+                    print_bytes(user_stdout_content)
+                    decoded_data = base64.decodestring(encoded_data)
+                    result_actions = pickle.loads(decoded_data)
                     for action, arguments in result_actions:
                         getattr(result, action)(*arguments)
             finally:
@@ -45,6 +50,13 @@ class SubprocessTestCase(TestCase):
                     stop_test_run = getattr(result, 'stopTestRun', None)
                     if stop_test_run is not None and callable(stop_test_run):
                         stop_test_run()
+
+
+def print_bytes(content):
+    output = sys.stdout.buffer if hasattr(sys.stdout, 'buffer') else sys.stdout
+    sys.stdout.flush()
+    output.write(content)
+    output.flush()
 
 
 class PicklableTestResult(TestResult):
