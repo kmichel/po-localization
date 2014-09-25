@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import django
 from django.conf import settings
+from django.core import management
 
 if not settings.configured:
     settings.configure()
@@ -21,30 +22,6 @@ from django.test import SimpleTestCase
 from django.utils import translation
 from po_localization.tests.subtest import SubprocessTestCase
 
-SETTINGS = {
-    'ALLOWED_HOSTS': ['*'],
-    'AUTO_RELOAD_TRANSLATIONS': True,
-    'AUTO_UPDATE_TRANSLATIONS': True,
-    'UPDATE_TRANSLATIONS_PACKAGES': (
-        'test_app',
-    ),
-    'UPDATE_TRANSLATIONS_EXCLUDED_LOCALES': (
-        'en',
-    ),
-    'MIDDLEWARE_CLASSES': (
-        'po_localization.middleware.PoLocalizationMiddleware',
-    ),
-    'INSTALLED_APPS': (
-        'test_app',
-    ),
-    'LANGUAGE_CODE': 'fr',
-    'LANGUAGES': (
-        ('fr', 'French'),
-        ('en', 'English'),
-    ),
-    'ROOT_URLCONF': 'test_app.urls',
-}
-
 
 class IntegrationTestCase(SubprocessTestCase, SimpleTestCase):
     def setUp(self):
@@ -58,7 +35,31 @@ class IntegrationTestCase(SubprocessTestCase, SimpleTestCase):
         shutil.rmtree(self.temp_dir)
 
     def test_simple(self):
-        with self.settings(**SETTINGS):
+        local_settings = {
+            'ALLOWED_HOSTS': ['*'],
+            'AUTO_RELOAD_TRANSLATIONS': True,
+            'AUTO_UPDATE_TRANSLATIONS': True,
+            'UPDATE_TRANSLATIONS_PACKAGES': (
+                'test_app',
+            ),
+            'UPDATE_TRANSLATIONS_EXCLUDED_LOCALES': (
+                'en',
+            ),
+            'MIDDLEWARE_CLASSES': (
+                'po_localization.middleware.PoLocalizationMiddleware',
+            ),
+            'INSTALLED_APPS': (
+                'po_localization',
+                'test_app',
+            ),
+            'LANGUAGE_CODE': 'fr',
+            'LANGUAGES': (
+                ('fr', 'French'),
+                ('en', 'English'),
+            ),
+            'ROOT_URLCONF': 'test_app.urls',
+        }
+        with self.settings(**local_settings):
             self.client.get('')
             self.assertTrue(os.path.exists(self.locale_path))
             french_translation_filename = os.path.join(self.locale_path, 'fr/LC_MESSAGES/django.po')
@@ -202,3 +203,21 @@ msgstr[0] "%(counter)s élément"
 msgstr[1] "%(counter)s éléments"
 """)
 
+    def test_management_command(self):
+        local_settings = {
+            'AUTO_UPDATE_TRANSLATIONS': False,
+            'INSTALLED_APPS': (
+                'po_localization',
+                'test_app',
+            ),
+            'MIDDLEWARE_CLASSES': (
+                'po_localization.middleware.PoLocalizationMiddleware',
+            ),
+            'UPDATE_TRANSLATIONS_PACKAGES': (
+                'test_app',
+            ),
+        }
+        with self.settings(**local_settings):
+            self.assertFalse(os.path.exists(self.locale_path))
+            management.call_command('update_translations')
+            self.assertTrue(os.path.exists(self.locale_path))
