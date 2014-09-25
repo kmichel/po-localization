@@ -33,7 +33,7 @@ class SubprocessTestCase(TestCase):
                 subtest_thunk = os.path.join(os.path.dirname(__file__), 'subtest_thunk.py')
                 args = [sys.executable, subtest_thunk, test_module_name, test_class_name, test_method_name]
                 environment = os.environ
-                if 'coverage' in sys.modules and sys.path[0] == '':
+                if 'coverage' in sys.modules:
                     environment = environment.copy()
                     environment['COVERAGE_PROCESS_START'] = '.coveragerc'
                 proc = subprocess.Popen(args, stdout=subprocess.PIPE, env=environment)
