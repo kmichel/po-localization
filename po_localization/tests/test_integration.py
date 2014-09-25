@@ -58,18 +58,17 @@ class IntegrationTestCase(SubprocessTestCase, SimpleTestCase):
         shutil.rmtree(self.temp_dir)
 
     def test_simple(self):
-        try:
-            with self.settings(**SETTINGS):
-                self.client.get('')
-                self.assertTrue(os.path.exists(self.locale_path))
-                french_translation_filename = os.path.join(self.locale_path, 'fr/LC_MESSAGES/django.po')
-                self.assertTrue(os.path.isfile(french_translation_filename))
-                english_translation_filename = os.path.join(self.locale_path, 'en/LC_MESSAGES/django.po')
-                self.assertFalse(os.path.exists(english_translation_filename))
+        with self.settings(**SETTINGS):
+            self.client.get('')
+            self.assertTrue(os.path.exists(self.locale_path))
+            french_translation_filename = os.path.join(self.locale_path, 'fr/LC_MESSAGES/django.po')
+            self.assertTrue(os.path.isfile(french_translation_filename))
+            english_translation_filename = os.path.join(self.locale_path, 'en/LC_MESSAGES/django.po')
+            self.assertFalse(os.path.exists(english_translation_filename))
 
-                with io.open(french_translation_filename, 'r', encoding='utf-8') as translation_file:
-                    self.assertEqual(
-                        translation_file.read(),
+            with io.open(french_translation_filename, 'r', encoding='utf-8') as translation_file:
+                self.assertEqual(
+                    translation_file.read(),
 """#: models.py:12
 msgid "test field"
 msgstr ""
@@ -89,9 +88,9 @@ msgctxt "view context"
 msgid "test view string"
 msgstr ""
 """)
-                self.assertEqual("test field", translation.ugettext("test field"))
-                with io.open(french_translation_filename, 'w', encoding='utf-8') as translation_file:
-                    translation_file.write(
+            self.assertEqual("test field", translation.ugettext("test field"))
+            with io.open(french_translation_filename, 'w', encoding='utf-8') as translation_file:
+                translation_file.write(
 """
 msgid "test field"
 msgstr "champ de test"
@@ -108,25 +107,25 @@ msgctxt "view context"
 msgid "test view string"
 msgstr "chaîne de vue de test"
 """)
-                # No request triggered, still not translated
-                self.assertEqual("test field", translation.ugettext("test field"))
-                self.assertEqual("test template", translation.ugettext("test template"))
-                self.assertEqual("test view string", translation.pgettext("view context", "test view string"))
-                self.assertEqual("%(counter)s items", translation.ungettext("%(counter)s item", "%(counter)s items", 2))
-                # Trigger a request, should reload translations
-                self.assertEqual("chaîne de vue de test", self.client.get('').content.decode('utf-8'))
-                self.assertEqual("champ de test", translation.ugettext("test field"))
-                self.assertEqual("template de test", translation.ugettext("test template"))
-                self.assertEqual("chaîne de vue de test", translation.pgettext("view context", "test view string"))
-                self.assertEqual("%(counter)s éléments", translation.ungettext("%(counter)s item", "%(counter)s items", 2))
+            # No request triggered, still not translated
+            self.assertEqual("test field", translation.ugettext("test field"))
+            self.assertEqual("test template", translation.ugettext("test template"))
+            self.assertEqual("test view string", translation.pgettext("view context", "test view string"))
+            self.assertEqual("%(counter)s items", translation.ungettext("%(counter)s item", "%(counter)s items", 2))
+            # Trigger a request, should reload translations
+            self.assertEqual("chaîne de vue de test", self.client.get('').content.decode('utf-8'))
+            self.assertEqual("champ de test", translation.ugettext("test field"))
+            self.assertEqual("template de test", translation.ugettext("test template"))
+            self.assertEqual("chaîne de vue de test", translation.pgettext("view context", "test view string"))
+            self.assertEqual("%(counter)s éléments", translation.ungettext("%(counter)s item", "%(counter)s items", 2))
 
-                # Test file update
-                with io.open(os.path.join(self.temp_dir, 'test_app/models.py'), 'a', encoding='utf-8') as models_file:
-                    models_file.write('    second_field=models.TextField(verbose_name=_(\'second field\'))')
-                self.client.get('')
-                with io.open(french_translation_filename, 'r', encoding='utf-8') as translation_file:
-                    self.assertEqual(
-                        translation_file.read(),
+            # Test file update
+            with io.open(os.path.join(self.temp_dir, 'test_app/models.py'), 'a', encoding='utf-8') as models_file:
+                models_file.write('    second_field=models.TextField(verbose_name=_(\'second field\'))')
+            self.client.get('')
+            with io.open(french_translation_filename, 'r', encoding='utf-8') as translation_file:
+                self.assertEqual(
+                    translation_file.read(),
 """#: models.py:12
 msgid "test field"
 msgstr "champ de test"
@@ -150,12 +149,12 @@ msgctxt "view context"
 msgid "test view string"
 msgstr "chaîne de vue de test"
 """)
-                # Test file removal
-                os.unlink(os.path.join(self.temp_dir, 'test_app/views.py'))
-                self.client.get('')
-                with io.open(french_translation_filename, 'r', encoding='utf-8') as translation_file:
-                    self.assertEqual(
-                        translation_file.read(),
+            # Test file removal
+            os.unlink(os.path.join(self.temp_dir, 'test_app/views.py'))
+            self.client.get('')
+            with io.open(french_translation_filename, 'r', encoding='utf-8') as translation_file:
+                self.assertEqual(
+                    translation_file.read(),
 """#. obsolete entry
 msgctxt "view context"
 msgid "test view string"
@@ -179,11 +178,11 @@ msgid_plural "%(counter)s items"
 msgstr[0] "%(counter)s élément"
 msgstr[1] "%(counter)s éléments"
 """)
-                with self.settings(UPDATE_TRANSLATIONS_PRUNE_OBSOLETES=True):
-                    self.client.get('')
-                    with io.open(french_translation_filename, 'r', encoding='utf-8') as translation_file:
-                        self.assertEqual(
-                            translation_file.read(),
+            with self.settings(UPDATE_TRANSLATIONS_PRUNE_OBSOLETES=True):
+                self.client.get('')
+                with io.open(french_translation_filename, 'r', encoding='utf-8') as translation_file:
+                    self.assertEqual(
+                        translation_file.read(),
 """#: models.py:12
 msgid "test field"
 msgstr "champ de test"
@@ -202,6 +201,4 @@ msgid_plural "%(counter)s items"
 msgstr[0] "%(counter)s élément"
 msgstr[1] "%(counter)s éléments"
 """)
-        finally:
-            if os.path.exists(self.locale_path):
-                shutil.rmtree(self.locale_path)
+
