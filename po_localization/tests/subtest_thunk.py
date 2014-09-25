@@ -6,11 +6,15 @@ from __future__ import unicode_literals
 
 import base64
 from importlib import import_module
+import os
 import pickle
 import sys
 from po_localization.tests.subtest import PicklableTestResult, print_bytes
 
 if __name__ == '__main__':
+    if 'COVERAGE_PROCESS_START' in os.environ:
+        import coverage
+        coverage.process_startup()
     module_name, class_name, method_name = sys.argv[1:]
     module = import_module(module_name)
     test_case_class = getattr(module, class_name)

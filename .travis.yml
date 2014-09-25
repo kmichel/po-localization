@@ -12,6 +12,7 @@ install:
   - pip install -q .
   - pip install coveralls
 script:
-  - coverage run --source=po_localization --omit=po_localization/tests/* --module unittest discover
+  - coverage run --module unittest discover
+  - coverage combine
 after_success:
   - coveralls
