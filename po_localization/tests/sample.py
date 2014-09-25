@@ -95,3 +95,14 @@ def some_function():
 
 
 gettext('still not a translation')
+
+
+def something_else():
+    pass
+
+
+something_else().gettext('not a translation')
+
+something = {}
+something["else"].gettext('not a translation')
+
