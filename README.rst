@@ -41,7 +41,7 @@ Installation
 =====
 Setup
 =====
-* Add ``'po_localization'``to your ``INSTALLED_CLASSES``.
+* Add ``'po_localization'`` to your ``INSTALLED_CLASSES``.
 * Add ``'po_localization.middleware.PoLocalizationMiddleware'`` to your ``MIDDLEWARE_CLASSES``.
 
 ========
