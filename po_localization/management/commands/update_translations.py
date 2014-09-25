@@ -13,4 +13,4 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         from ...middleware import PoLocalizationMiddleware
         po_localization_middleware = PoLocalizationMiddleware()
-        po_localization_middleware.translations_updater.do_load()
+        po_localization_middleware.translations_updater.execute()

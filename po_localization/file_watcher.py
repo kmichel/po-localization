@@ -10,27 +10,25 @@ import threading
 
 
 class FileWatcher(object):
-    def __init__(self):
+    def __init__(self, operator):
+        self.operator = operator
         self.file_mtimes = {}
         self.is_dirty = True
         self.lock = threading.Lock()
 
-    def reload(self):
+    def set_dirty(self):
+        self.is_dirty = True
+
+    def check(self):
         with self.lock:
             if not self.is_dirty:
                 self._check_for_changes()
             if self.is_dirty:
-                self.do_load()
+                self.operator.execute()
                 self.is_dirty = False
 
-    def do_load(self):
-        pass
-
-    def list_files(self):
-        return ()
-
     def _check_for_changes(self):
-        files_list = set(self.list_files())
+        files_list = set(self.operator.list_files())
         for file_path in list(self.file_mtimes.keys()):
             if file_path not in files_list:
                 self.is_dirty = True

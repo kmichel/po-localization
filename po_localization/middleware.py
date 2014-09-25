@@ -10,6 +10,7 @@ from django.utils._os import upath
 from django.utils.importlib import import_module
 from django.test.signals import setting_changed
 import django.utils.translation.trans_real
+from po_localization.file_watcher import FileWatcher
 from po_localization.translations_loader import TranslationsLoader
 from po_localization.translations_updater import TranslationsUpdater
 
@@ -18,6 +19,8 @@ class PoLocalizationMiddleware(object):
     def __init__(self):
         self.translations_updater = TranslationsUpdater()
         self.translations_loader = TranslationsLoader()
+        self.translations_updater_watcher = FileWatcher(self.translations_updater)
+        self.translations_loader_watcher = FileWatcher(self.translations_loader)
         self.reconfigure()
         setting_changed.connect(self._reconfigure)
 
@@ -31,16 +34,16 @@ class PoLocalizationMiddleware(object):
         self.translations_updater.include_locations = getattr(settings, 'UPDATE_TRANSLATIONS_WITH_LOCATIONS', True)
         self.translations_updater.prune_obsoletes = getattr(settings, 'UPDATE_TRANSLATIONS_PRUNE_OBSOLETES', False)
         # Force update in case any setting has changed (which changes the output)
-        self.translations_updater.is_dirty = True
+        self.translations_updater_watcher.set_dirty()
 
         self.translations_loader.locales = get_enabled_locales()
         self.translations_loader.locale_paths = get_translations_reload_roots()
 
     def process_request(self, request):
         if getattr(settings, 'AUTO_UPDATE_TRANSLATIONS', False):
-            self.translations_updater.reload()
+            self.translations_updater_watcher.check()
         if getattr(settings, 'AUTO_RELOAD_TRANSLATIONS', settings.DEBUG):
-            self.translations_loader.reload()
+            self.translations_loader_watcher.check()
 
 
 def get_enabled_locales(excluded_locales=()):

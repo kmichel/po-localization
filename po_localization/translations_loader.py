@@ -10,13 +10,13 @@ from . import parser
 from .file_watcher import FileWatcher
 
 
-class TranslationsLoader(FileWatcher):
+class TranslationsLoader(object):
     def __init__(self, locale_paths=(), locales=()):
         self.locale_paths = locale_paths
         self.locales = locales
         super(TranslationsLoader, self).__init__()
 
-    def do_load(self):
+    def execute(self):
         for locale in self.locales:
             language = django.utils.translation.trans_real.to_language(locale)
             # XXX: this will trigger useless loading of translations from django code

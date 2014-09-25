@@ -19,7 +19,7 @@ extractors = {
 """:type extractors: dict[str, (str, str, str) -> None]"""
 
 
-class TranslationsUpdater(FileWatcher):
+class TranslationsUpdater(object):
     def __init__(self, root_paths=(), locales=(), include_locations=True, prune_obsoletes=False):
         super(TranslationsUpdater, self).__init__()
         self.root_paths = root_paths
@@ -27,7 +27,7 @@ class TranslationsUpdater(FileWatcher):
         self.include_locations = include_locations
         self.prune_obsoletes = prune_obsoletes
 
-    def do_load(self):
+    def execute(self):
         for root_path in self.root_paths:
             update_translations(
                 root_path=root_path,
