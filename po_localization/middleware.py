@@ -5,6 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
+import django
 from django.conf import settings
 from django.utils._os import upath
 from django.utils.importlib import import_module
@@ -56,11 +57,15 @@ def get_enabled_locales(excluded_locales=()):
 
 
 def get_translations_reload_roots():
-    ret = []
-    localization_packages = ['django.conf']
-    # TODO: use app registry in django >= 1.7
-    localization_packages.extend(reversed(settings.INSTALLED_APPS))
-    ret.extend(get_packages_paths(localization_packages, 'locale'))
+    ret = get_packages_paths(['django.conf'], 'locale')
+    if django.VERSION[:2] < (1, 7):
+        ret.extend(get_packages_paths(reversed(settings.INSTALLED_APPS), 'locale'))
+    else:
+        from django.apps import apps
+
+        for app_config in apps.get_app_configs():
+            module_path = os.path.dirname(upath(app_config.module.__file__))
+            ret.append(os.path.join(module_path, 'locale'))
     for locale_path in reversed(settings.LOCALE_PATHS):
         if os.path.isdir(locale_path):
             ret.append(locale_path)

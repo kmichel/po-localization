@@ -19,6 +19,7 @@ import shutil
 import sys
 import tempfile
 import time
+import unittest
 from django.test import SimpleTestCase
 from django.utils import translation
 from po_localization.tests.subtest import SubprocessTestCase
@@ -248,3 +249,46 @@ msgstr[1] "%(counter)s éléments"
         with self.settings(**local_settings):
             response = self.client.get('')
             self.assertEqual("chaîne de test de projet", response.content.decode('utf-8'))
+
+    @unittest.skipIf(django.VERSION[:2] < (1, 7), "app registry not available in django<1.7")
+    def test_app_registry(self):
+        local_settings = {
+            'ALLOWED_HOSTS': ['*'],
+            'AUTO_RELOAD_TRANSLATIONS': True,
+            'AUTO_UPDATE_TRANSLATIONS': False,
+            'MIDDLEWARE_CLASSES': (
+                'po_localization.middleware.PoLocalizationMiddleware',
+            ),
+            'INSTALLED_APPS': (
+                'po_localization',
+                'test_app.apps.TestAppConfig',
+            ),
+            'LANGUAGE_CODE': 'fr',
+            'LANGUAGES': (
+                ('fr', 'French'),
+                ('en', 'English'),
+            ),
+            'ROOT_URLCONF': 'test_app.urls',
+        }
+        with self.settings(**local_settings):
+            french_translation_filename = os.path.join(self.locale_path, 'fr/LC_MESSAGES/django.po')
+            os.makedirs(os.path.dirname(french_translation_filename))
+            with io.open(french_translation_filename, 'w', encoding='utf-8') as translation_file:
+                translation_file.write(
+"""
+msgid "test field"
+msgstr "champ de test"
+
+msgid "test template"
+msgstr "template de test"
+
+msgid "%(counter)s item"
+msgid_plural "%(counter)s items"
+msgstr[0] "%(counter)s élément"
+msgstr[1] "%(counter)s éléments"
+
+msgctxt "view context"
+msgid "test view string"
+msgstr "chaîne de vue de test"
+""")
+            self.assertEqual("chaîne de vue de test", self.client.get('').content.decode('utf-8'))
