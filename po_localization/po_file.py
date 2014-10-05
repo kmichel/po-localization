@@ -4,8 +4,11 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import re
 from io import StringIO
 from .strings import escape
+
+EMBEDDED_NEWLINE_MATCHER = re.compile(r'[^\n]\n+[^\n]')
 
 
 class PoFile(object):
@@ -126,20 +129,31 @@ class TranslationEntry(object):
         if include_locations and len(self.locations):
             print('#: {}'.format(' '.join('{}:{}'.format(*location) for location in self.locations)), file=fp)
         if self.context is not None:
-            print('msgctxt "{}"'.format(escape(self.context)), file=fp)
-        print('msgid "{}"'.format(escape(self.message)), file=fp)
+            print('msgctxt {}'.format(multiline_escape(self.context)), file=fp)
+        print('msgid {}'.format(multiline_escape(self.message)), file=fp)
         if self.plural is not None:
-            print('msgid_plural "{}"'.format(escape(self.plural)), file=fp)
+            print('msgid_plural {}'.format(multiline_escape(self.plural)), file=fp)
             if nplurals is None:
                 if len(self.translations) > 0:
                     nplurals = max(max(self.translations.keys()) + 1, min_nplurals)
                 else:
                     nplurals = min_nplurals
             for index in range(nplurals):
-                print('msgstr[{}] "{}"'.format(index, self.translations.get(index, '')), file=fp)
+                print('msgstr[{}] {}'.format(index, multiline_escape(self.translations.get(index, ''))), file=fp)
         else:
-            print('msgstr "{}"'.format(self.translations.get(0, '')), file=fp)
+            print('msgstr {}'.format(multiline_escape(self.translations.get(0, ''))), file=fp)
         return True
+
+
+def multiline_escape(string):
+    if EMBEDDED_NEWLINE_MATCHER.search(string):
+        lines = string.split('\n')
+        return (
+            '""\n'
+            + '\n'.join('"{}\\n"'.format(escape(line)) for line in lines[:-1])
+            + ('\n"{}"'.format(escape(lines[-1])) if len(lines[-1]) else ""))
+    else:
+        return '"{}"'.format(escape(string))
 
 
 def get_msgid(message, context=None):

@@ -164,3 +164,71 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 """, po_file.dumps(include_locations=False, prune_obsoletes=False))
+
+    def test_dump_embedded_newlines(self):
+        po_file = PoFile()
+        entry = po_file.add_entry("multiline\nmessage", "multiline\nplural", "multiline\ncontext")
+        entry.add_location("filename.py", 42)
+        entry.add_plural_translation(0, "translated\nmultiline\nmessage")
+        entry.add_plural_translation(1, "translated\nmultiline\nplural")
+        self.assertEqual(r"""msgctxt ""
+"multiline\n"
+"context"
+msgid ""
+"multiline\n"
+"message"
+msgid_plural ""
+"multiline\n"
+"plural"
+msgstr[0] ""
+"translated\n"
+"multiline\n"
+"message"
+msgstr[1] ""
+"translated\n"
+"multiline\n"
+"plural"
+""", po_file.dumps(include_locations=False, prune_obsoletes=False))
+
+    def test_dump_terminal_newline(self):
+        po_file = PoFile()
+        entry = po_file.add_entry("\nmessage\n", "\nplural\n", "\ncontext\n")
+        entry.add_location("filename.py", 42)
+        entry.add_plural_translation(0, "\ntranslated message\n")
+        entry.add_plural_translation(1, "\ntranslated plural\n")
+        self.assertEqual(r"""msgctxt "\ncontext\n"
+msgid "\nmessage\n"
+msgid_plural "\nplural\n"
+msgstr[0] "\ntranslated message\n"
+msgstr[1] "\ntranslated plural\n"
+""", po_file.dumps(include_locations=False, prune_obsoletes=False))
+
+    def test_dump_embedded_and_terminal_newlines(self):
+        po_file = PoFile()
+        entry = po_file.add_entry("\nmultiline\nmessage\n", "\nmultiline\nplural\n", "\nmultiline\ncontext\n")
+        entry.add_location("filename.py", 42)
+        entry.add_plural_translation(0, "\ntranslated\nmultiline\nmessage\n")
+        entry.add_plural_translation(1, "\ntranslated\nmultiline\nplural\n")
+        self.assertEqual(r"""msgctxt ""
+"\n"
+"multiline\n"
+"context\n"
+msgid ""
+"\n"
+"multiline\n"
+"message\n"
+msgid_plural ""
+"\n"
+"multiline\n"
+"plural\n"
+msgstr[0] ""
+"\n"
+"translated\n"
+"multiline\n"
+"message\n"
+msgstr[1] ""
+"\n"
+"translated\n"
+"multiline\n"
+"plural\n"
+""", po_file.dumps(include_locations=False, prune_obsoletes=False))
