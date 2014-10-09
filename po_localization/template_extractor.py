@@ -13,30 +13,33 @@ from django.utils import six
 
 def extract_messages(filename, po_file, printable_filename=None):
     printable_filename = filename if printable_filename is None else printable_filename
+    nodes = parse_file(filename, printable_filename)
+    for lineno_node in nodes.get_nodes_by_type(LinenoNode):
+        wrapped_node = lineno_node.wrapped_node
+        if isinstance(wrapped_node, i18n.TranslateNode):
+            message = resolve_literal_string_filter_expression(wrapped_node.filter_expression)
+            if message is not None:
+                context, context_is_variable = get_context_and_variability(wrapped_node)
+                if not context_is_variable:
+                    po_file.add_entry(message, context=context).add_location(printable_filename, lineno_node.lineno)
+        elif isinstance(wrapped_node, i18n.BlockTranslateNode):
+            message, singular_vars = wrapped_node.render_token_list(wrapped_node.singular)
+            context, context_is_variable = get_context_and_variability(wrapped_node)
+            if not context_is_variable:
+                if wrapped_node.countervar and wrapped_node.counter:
+                    plural, plural_vars = wrapped_node.render_token_list(wrapped_node.plural)
+                    po_file.add_entry(message, plural, context).add_location(printable_filename, lineno_node.lineno)
+                else:
+                    po_file.add_entry(message, context=context).add_location(printable_filename, lineno_node.lineno)
+
+
+def parse_file(filename, printable_filename=None):
     with io.open(filename, 'r', encoding='utf-8') as sample_file:
         file_content = sample_file.read()
     lexer = template.Lexer(file_content, printable_filename)
     tokens = lexer.tokenize()
     parser = MessageParser(tokens)
-    nodes = parser.parse()
-    for node in nodes:
-        if isinstance(node, LinenoNode):
-            wrapped_node = node.wrapped_node
-            if isinstance(wrapped_node, i18n.TranslateNode):
-                message = resolve_literal_string_filter_expression(wrapped_node.filter_expression)
-                if message is not None:
-                    context, context_is_variable = get_context_and_variability(wrapped_node)
-                    if not context_is_variable:
-                        po_file.add_entry(message, context=context).add_location(lexer.origin, node.lineno)
-            elif isinstance(wrapped_node, i18n.BlockTranslateNode):
-                message, singular_vars = wrapped_node.render_token_list(wrapped_node.singular)
-                context, context_is_variable = get_context_and_variability(wrapped_node)
-                if not context_is_variable:
-                    if wrapped_node.countervar and wrapped_node.counter:
-                        plural, plural_vars = wrapped_node.render_token_list(wrapped_node.plural)
-                        po_file.add_entry(message, plural, context).add_location(lexer.origin, node.lineno)
-                    else:
-                        po_file.add_entry(message, context=context).add_location(lexer.origin, node.lineno)
+    return parser.parse()
 
 
 class MessageParser(template.Parser):
