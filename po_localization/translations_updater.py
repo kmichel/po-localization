@@ -46,9 +46,19 @@ class TranslationsUpdater(object):
 def update_translations(
         root_path, domain='django', locales=(), locales_path='locale',
         update_all=True, include_locations=True, prune_obsoletes=False):
+    locales_path = os.path.join(root_path, locales_path)
+    base_po_file = create_base_po_file(root_path)
+    create_locales_paths(locales_path, locales)
+    if os.path.isdir(locales_path):
+        for locale in os.listdir(locales_path):
+            locale_path = os.path.join(locales_path, locale)
+            if os.path.isdir(locale_path) and (update_all or locale in locales):
+                update_locale_translations(base_po_file, locale_path, domain, include_locations, prune_obsoletes)
+
+
+def create_base_po_file(root_path):
     base_po_file = PoFile()
     root_path_length = len(root_path) + (0 if root_path.endswith('/') else 1)
-    locales_path = os.path.join(root_path, locales_path)
     for dirpath, dirnames, filenames in os.walk(root_path):
         for filename in filenames:
             extension = os.path.splitext(filename)[1]
@@ -57,26 +67,30 @@ def update_translations(
                 full_filename = os.path.join(dirpath, filename)
                 printable_filename = full_filename[root_path_length:]
                 extractor(full_filename, base_po_file, printable_filename=printable_filename)
+    return base_po_file
+
+
+def create_locales_paths(locales_path, locales):
     for locale in locales:
         locale_path = os.path.join(locales_path, locale)
         if not os.path.exists(locale_path):
             os.makedirs(locale_path)
-    if os.path.isdir(locales_path):
-        for locale in os.listdir(locales_path):
-            locale_path = os.path.join(locales_path, locale)
-            if os.path.isdir(locale_path) and (update_all or locale in locales):
-                locale_po_file = base_po_file.clone()
-                translation_filename = os.path.join(locale_path, 'LC_MESSAGES/{}.po'.format(domain))
-                if os.path.exists(translation_filename):
-                    Parser(locale_po_file).parse_po_filename(translation_filename)
-                # We do this dance to avoid overwriting the locale file with a broken one
-                # if the dump function ever fails. A real atomic write may be better but
-                # requires fiddling with file attributes and alters the inode (which is used
-                # by osx aliases).
-                memory_file = io.StringIO()
-                locale_po_file.dump(memory_file, include_locations=include_locations, prune_obsoletes=prune_obsoletes)
-                memory_file.seek(0)
-                if not os.path.exists(os.path.dirname(translation_filename)):
-                    os.makedirs(os.path.dirname(translation_filename))
-                with io.open(translation_filename, 'w', encoding='utf-8') as locale_file:
-                    locale_file.write(memory_file.read())
+
+
+def update_locale_translations(
+        po_file, locale_path, domain='django', include_locations=True, prune_obsoletes=False):
+    po_file = po_file.clone()
+    translation_filename = os.path.join(locale_path, 'LC_MESSAGES/{}.po'.format(domain))
+    if os.path.exists(translation_filename):
+        Parser(po_file).parse_po_filename(translation_filename)
+    if not os.path.exists(os.path.dirname(translation_filename)):
+        os.makedirs(os.path.dirname(translation_filename))
+    # We do this dance to avoid overwriting the locale file with a broken one
+    # if the dump function ever fails. A real atomic write may be better but
+    # requires fiddling with file attributes and alters the inode (which is used
+    # by osx aliases).
+    memory_file = io.StringIO()
+    po_file.dump(memory_file, include_locations=include_locations, prune_obsoletes=prune_obsoletes)
+    memory_file.seek(0)
+    with io.open(translation_filename, 'w', encoding='utf-8') as locale_file:
+        locale_file.write(memory_file.read())
