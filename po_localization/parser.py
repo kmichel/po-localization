@@ -9,7 +9,26 @@ import re
 from po_localization.po_file import PoFile
 from .strings import unescape, UnescapeError
 
-MATCHER = re.compile(r'^\s*(#.*)?\s*(?:([^"\[\s]+)(?:\[(\d+)\])?)?(?:\s*"(.*)")?\s*$')
+MATCHER = re.compile(r"""
+    ^\s*
+    ( # optional:
+        \#.*
+    )? # comment (group 1)
+    (?: # optional:
+        (?: # optional:
+            ( # keywords (group 2)
+                (?:msgctxt|msgid|msgid_plural)(?!\[) # without index
+                | msgstr # with index
+            )
+            (?: # optional:
+                \[(\d+)\] # message string index (group 3)
+            )?
+        )?
+        \s*
+        "(.*)" # quoted string (group 4)
+        \s*
+    )?
+    $""", re.VERBOSE)
 
 
 def parse_po_filename(filename):
@@ -20,7 +39,7 @@ def parse_po_filename(filename):
 
 def parse_po_file(fp, filename=None):
     po_file = PoFile()
-    Parser(po_file).parse_po_file(fp)
+    Parser(po_file).parse_po_file(fp, filename)
     return po_file.get_catalog()
 
 
@@ -69,43 +88,29 @@ class Parser(object):
             try:
                 match = MATCHER.match(line)
                 if match is None:
-                    raise ParseError(filename, line_number, "Invalid syntax")
-                if match.group(1):
-                    # comment
+                    raise ParseError(filename, line_number, "Invalid syntax: {}".format(line))
+                if match.group(1) is not None or match.group(4) is None:
+                    # comment or newline
                     continue
-                if match.group(2) == 'msgctxt' and self.state not in ('after msgctxt', 'after msgid', 'after msgid_plural'):
+                if match.group(2) == 'msgctxt' and self.state in ('start', 'after msgstr', 'after msgstr[N]'):
                     self._store_pending_data()
-                    if match.group(3) is not None:
-                        raise ParseError(filename, line_number, "Unexpected index afted keyword")
-                    if match.group(4) is None:
-                        raise ParseError(filename, line_number, "Missing context string")
                     self.context = unescape(match.group(4))
                     self.state = 'after msgctxt'
-                elif match.group(2) == 'msgid' and self.state not in ('after msgid', 'after msgid_plural'):
+                elif match.group(2) == 'msgid' and self.state in ('start', 'after msgctxt', 'after msgstr', 'after msgstr[N]'):
                     if self.state != 'after msgctxt':
                         self._store_pending_data()
-                    if match.group(3) is not None:
-                        raise ParseError(filename, line_number, "Unexpected index afted keyword")
-                    if match.group(4) is None:
-                        raise ParseError(filename, line_number, "Missing message identifier string")
                     self.message = unescape(match.group(4))
                     self.state = 'after msgid'
                 elif match.group(2) == 'msgid_plural' and self.state == 'after msgid':
-                    if match.group(3) is not None:
-                        raise ParseError(filename, line_number, "Unexpected index after keyword")
-                    if match.group(4) is None:
-                        raise ParseError(filename, line_number, "Missing plural message identifier string")
                     self.plural_message = unescape(match.group(4))
                     self.state = 'after msgid_plural'
                 elif match.group(2) == 'msgstr' and self.state in ('after msgid', 'after msgid_plural', 'after msgstr[N]'):
-                    if match.group(4) is None:
-                        raise ParseError(filename, line_number, "Missing translated message string")
                     if self.state == 'after msgid':
                         if match.group(3) is not None:
                             raise ParseError(filename, line_number, "Unexpected plural message index after keyword")
                         self.translated_message = unescape(match.group(4))
                         self.state = 'after msgstr'
-                    elif self.state == 'after msgid_plural' or self.state == 'after msgstr[N]':
+                    else:
                         if match.group(3) is None:
                             raise ParseError(filename, line_number, "Missing plural message index after keyword")
                         self.current_plural_index = int(match.group(3))
@@ -115,15 +120,14 @@ class Parser(object):
                         self.plural_translated_messages[self.current_plural_index] = unescape(match.group(4))
                         self.state = 'after msgstr[N]'
                 elif match.group(2) is None:
-                    if match.group(4) is None:
-                        # empty-line
-                        continue
-                    if self.state == 'after msgid':
+                    if self.state == 'after msgctxt':
+                        self.context += unescape(match.group(4))
+                    elif self.state == 'after msgid':
                         self.message += unescape(match.group(4))
-                    elif self.state == 'after msgstr':
-                        self.translated_message += unescape(match.group(4))
                     elif self.state == 'after msgid_plural':
                         self.plural_message += unescape(match.group(4))
+                    elif self.state == 'after msgstr':
+                        self.translated_message += unescape(match.group(4))
                     elif self.state == 'after msgstr[N]':
                         self.plural_translated_messages[self.current_plural_index] += unescape(match.group(4))
                     else:
@@ -143,7 +147,7 @@ class ParseError(Exception):
         self.filename = filename
         self.line_number = line_number
         self.parse_error_message = message
-        super(ParseError, self).__init__(filename, line_number, message)
+        super(ParseError, self).__init__(filename, line_number, message, *args)
 
     def __str__(self):
         if self.filename and self.line_number:
