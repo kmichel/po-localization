@@ -11,6 +11,7 @@ htmlcov/
 MANIFEST
 build/
 dist/
+po_localization.egg-info/
 
 # PyCharm
 .idea/
