@@ -83,6 +83,8 @@ class PoFile(object):
 
 
 class TranslationEntry(object):
+    MIN_NPLURALS = 2
+
     def __init__(self, message, plural=None, context=None):
         self.message = message
         self.plural = plural
@@ -116,7 +118,7 @@ class TranslationEntry(object):
             if translation:
                 catalog[msgid] = translation
 
-    def dump(self, fp, nplurals=None, min_nplurals=2, include_locations=True, prune_obsolete=False):
+    def dump(self, fp, nplurals=None, include_locations=True, prune_obsolete=False):
         """
         If plural, shows exactly 'nplurals' plurals if 'nplurals' is not None, else shows at least min_nplurals.
         All plural index are ordered and consecutive, missing entries are displayed with an empty string.
@@ -134,15 +136,18 @@ class TranslationEntry(object):
         if self.plural is not None:
             print('msgid_plural {}'.format(multiline_escape(self.plural)), file=fp)
             if nplurals is None:
-                if len(self.translations) > 0:
-                    nplurals = max(max(self.translations.keys()) + 1, min_nplurals)
-                else:
-                    nplurals = min_nplurals
+                nplurals = self.get_suggested_nplurals()
             for index in range(nplurals):
                 print('msgstr[{}] {}'.format(index, multiline_escape(self.translations.get(index, ''))), file=fp)
         else:
             print('msgstr {}'.format(multiline_escape(self.translations.get(0, ''))), file=fp)
         return True
+
+    def get_suggested_nplurals(self):
+        if len(self.translations) > 0:
+            return max(max(self.translations.keys()) + 1, self.MIN_NPLURALS)
+        else:
+            return self.MIN_NPLURALS
 
 
 def multiline_escape(string):
