@@ -24,6 +24,7 @@ class PoLocalizationMiddleware(object):
         self.translations_loader_watcher = FileWatcher(self.translations_loader)
         self.reconfigure()
         setting_changed.connect(self._reconfigure)
+        self.waiting_for_first_request = True
 
     def _reconfigure(self, sender, **kwargs):
         self.reconfigure()
@@ -43,8 +44,9 @@ class PoLocalizationMiddleware(object):
     def process_request(self, request):
         if getattr(settings, 'AUTO_UPDATE_TRANSLATIONS', False):
             self.translations_updater_watcher.check()
-        if getattr(settings, 'AUTO_RELOAD_TRANSLATIONS', settings.DEBUG):
+        if self.waiting_for_first_request or getattr(settings, 'AUTO_RELOAD_TRANSLATIONS', settings.DEBUG):
             self.translations_loader_watcher.check()
+        self.waiting_for_first_request = False
 
 
 def get_enabled_locales(excluded_locales=()):

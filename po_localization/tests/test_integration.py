@@ -292,3 +292,35 @@ msgid "test view string"
 msgstr "chaîne de vue de test"
 """)
             self.assertEqual("chaîne de vue de test", self.client.get('').content.decode('utf-8'))
+
+    def test_auto_reload_disabled(self):
+        local_settings = {
+            'AUTO_RELOAD_TRANSLATIONS': False,
+            'INSTALLED_APPS': (
+                'po_localization',
+            ),
+            'MIDDLEWARE_CLASSES': (
+                'po_localization.middleware.PoLocalizationMiddleware',
+            ),
+            'LOCALE_PATHS': (
+                os.path.join(self.temp_dir, 'test_project/locale'),
+            ),
+            'LANGUAGE_CODE': 'fr',
+            'LANGUAGES': (
+                ('fr', 'French'),
+                ('en', 'English'),
+            ),
+            'ROOT_URLCONF': 'test_project.urls'
+        }
+        with self.settings(**local_settings):
+            self.client.get('')
+            self.assertEqual("chaîne de test de projet", translation.ugettext("test project string"))
+            translation_filename = os.path.join(self.temp_dir, 'test_project/locale/fr/LC_MESSAGES/django.po')
+            with io.open(translation_filename, 'a', encoding='utf-8') as translation_file:
+                translation_file.write(
+"""
+msgid "extra translation"
+msgstr "translation supplémentaire"
+""")
+            self.client.get('')
+            self.assertEqual("extra translation", translation.ugettext("extra translation"))
